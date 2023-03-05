@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 import com.example.examplemod.encyclopedia.EncyclopediaMenu;
 import com.example.examplemod.npc.NpcData;
-import com.example.examplemod.npc.NpcWorldData;
+import com.example.examplemod.npc.NpcManager;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -43,7 +43,7 @@ public class GetNpcData implements Message {
         ctx.enqueueWork(() -> {
             // Here we are Server side.
             ServerPlayer player = ctx.getSender();
-            NpcWorldData manager = NpcWorldData.get(player.level);
+            NpcManager manager = NpcManager.get(player.level);
             NpcData data = manager.getNpcData(npcId);
             LogUtils.getLogger().info("GetNpcData: " + data);
             if(data == null) {

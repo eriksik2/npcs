@@ -2,8 +2,8 @@ package com.example.examplemod.npc;
 
 public class NpcScreenRandomLookHelper {
     
-    private int width;
-    private int height;
+    private int scaleX;
+    private int scaleY;
 
     private float oldX;
     private float oldY;
@@ -15,9 +15,9 @@ public class NpcScreenRandomLookHelper {
 
     private float randomDelay = 0;
 
-    public NpcScreenRandomLookHelper(int width, int height) {
-        this.width = width;
-        this.height = height;
+    public NpcScreenRandomLookHelper(int scaleX, int scaleY) {
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
         oldX = 0;
         oldY = 0;
         targetX = 0;
@@ -25,12 +25,19 @@ public class NpcScreenRandomLookHelper {
         t = 1;
     }
 
+    public NpcScreenRandomLookHelper() {
+        this(100, 10);
+    }
+
     public void tick() {
         if(t >= 1) {
             randomDelay -= 0.05;
             if(randomDelay <= 0) {
-                randomDelay = (float) (Math.random() * 5 + 0.5);
-                setTarget((float) (Math.random() * 200 - 100), (float) (Math.random() *200 - 100));
+                float delayCurve = (float) (1-Math.pow(1-randomDelay, 2));
+                randomDelay = (float) (delayCurve * 10 + 0.5);
+                float randomX = (float) (Math.random()*2 - 1) * scaleX;
+                float randomY = (float) (Math.random()*2 - 1) * scaleY;
+                setTarget(randomX, randomY);
             }
         }
 

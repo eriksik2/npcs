@@ -60,6 +60,8 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     private final NpcScreenRandomLookHelper lookHelper;
 
+    private NpcData npcData;
+
     public NpcInteractScreen(NpcInteractMenu container, Inventory inv, Component name) {
         super(container, inv, name);
         this.imageWidth = 276;
@@ -96,6 +98,7 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     @Override
     public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        npcData = menu.getNpcData();
         lookHelper.tick();
         recalculateOptionsOffsets();
         this.renderBackground(matrixStack);
@@ -106,12 +109,6 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
     @Override
     protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
         Font font = Minecraft.getInstance().font;
-        NpcEntity npcEntity = menu.getEntity();
-        if(npcEntity == null) {
-            drawString(matrixStack, font, "Could not find entity associated with this menu.", 7, 7, 0xffffff);
-            return;
-        }
-        NpcData npcData = npcEntity.getNpcData();
         if(npcData == null) {
             drawString(matrixStack, font, "NpcData is not synced to the client.", 7, 7, 0xffffff);
             return;
@@ -136,8 +133,11 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
         NpcEntity npcEntity = menu.getEntity();
         int i = this.leftPos;
         int j = this.topPos;
+        Font font = Minecraft.getInstance().font;
+        font.draw(matrixStack, "c", (float)(i), (float)(j), 0xff0000);
+        font.draw(matrixStack, "X", lookHelper.getX(), lookHelper.getY(), 0xff0000);
         enableScissor(i + 108, j + 0, i + 108 + 164, j + 0 + 98);
-        renderEntityInInventory(i + 190, j + 160, 80, (float)(i - 100) - lookHelper.getX(), (float)(j - 50) - lookHelper.getY(), npcEntity);
+        renderEntityInInventory(i + 190, j + 160, 80, lookHelper.getX(), lookHelper.getY(), npcEntity);
         disableScissor();
         
         RenderSystem.setShaderTexture(0, GUI);
@@ -148,10 +148,6 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     private void renderTextbox(PoseStack matrixStack, int mouseX, int mouseY) {
         Font font = Minecraft.getInstance().font;
-        NpcEntity npcEntity = menu.getEntity();
-        if(npcEntity == null) return;
-        NpcData npcData = npcEntity.getNpcData();
-        String npcName = npcData.name;
         font.drawWordWrap(FormattedText.of(displayText), TEXT_X, TEXT_Y, TEXT_W, 0xffffff);
     }
 
@@ -196,8 +192,8 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     private void renderTrackButton(PoseStack stack, int mouseX, int mouseY) {
         Font font = Minecraft.getInstance().font;
-        NpcData data = menu.getEntity().getNpcData();
-        int trackX = NAME_X + font.width(FormattedText.of(data.name)) + 5;
+        if(npcData == null) return;
+        int trackX = NAME_X + font.width(FormattedText.of(npcData.name)) + 5;
         int trackY = NAME_Y - 1;
         int trackH = font.lineHeight;
         int trackW = trackH;
@@ -213,8 +209,8 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     private boolean mouseInTrackButton(double mouseX, double mouseY) {
         Font font = Minecraft.getInstance().font;
-        NpcData data = menu.getEntity().getNpcData();
-        int trackX = NAME_X + font.width(FormattedText.of(data.name)) + 5;
+        if(npcData == null) return false;
+        int trackX = NAME_X + font.width(FormattedText.of(npcData.name)) + 5;
         int trackY = NAME_Y - 1;
         int trackH = font.lineHeight;
         int trackW = trackH;
@@ -224,10 +220,10 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     private boolean mouseInName(double mouseX, double mouseY) {
         Font font = Minecraft.getInstance().font;
-        NpcData data = menu.getEntity().getNpcData();
+        if(npcData == null) return false;
         int nameX = NAME_X;
         int nameY = NAME_Y;
-        int nameW = font.width(FormattedText.of(data.name));
+        int nameW = font.width(FormattedText.of(npcData.name));
         int nameH = font.lineHeight;
         return mouseX >= leftPos + nameX && mouseX < leftPos + nameX + nameW
         && mouseY >= topPos + nameY && mouseY < topPos + nameY + nameH;
@@ -254,30 +250,28 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
     }
 
     private void clickedOption(int index) {
-        NpcEntity entity = menu.getEntity();
         if(index == 0) {
-            AddNpcToPlayerTeam msg = new AddNpcToPlayerTeam(entity.getId());
+            AddNpcToPlayerTeam msg = new AddNpcToPlayerTeam(menu.getNpcId());
             Messages.sendToServer(msg);
             displayText = "I'd love to join you!";
         } else if(index == 1) {
-            NpcData data = entity.getNpcData();
-            if(data.teamId == null){
+            if(npcData == null) return;
+            if(npcData.teamId == null){
                 displayText = "No, I'm on my own.";
             } else {
-                displayText = "Yes, I'm with group " + data.teamId;
+                displayText = "Yes, I'm with group " + npcData.teamId;
             }
         }
     }
 
     private void clickedTrackButton() {
-        NpcEntity entity = menu.getEntity();
-        ToggleTrackingEntity message = new ToggleTrackingEntity(entity.getId());
+        ToggleTrackingEntity message = new ToggleTrackingEntity(menu.getEntityId());
         Messages.sendToServer(message);
     }
 
     private void clickedName() {
-        NpcEntity entity = menu.getEntity();
-        OpenEncyclopedia message = new OpenEncyclopedia(entity.getNpcData().npcId);
+        if(npcData == null) return;
+        OpenEncyclopedia message = new OpenEncyclopedia(npcData.npcId);
         Messages.sendToServer(message);
     }
 

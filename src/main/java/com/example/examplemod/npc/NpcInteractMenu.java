@@ -2,6 +2,7 @@ package com.example.examplemod.npc;
 
 import com.example.examplemod.setup.Registration;
 
+import ca.weblite.objc.Client;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +21,7 @@ public class NpcInteractMenu extends AbstractContainerMenu {
     public Player player;
     private IItemHandler playerInventory;
 
+    public DataSlot nidSlot;
     public DataSlot eidSlot;
 
     // Server constructor
@@ -30,6 +32,8 @@ public class NpcInteractMenu extends AbstractContainerMenu {
 
         this.eidSlot = this.addDataSlot(DataSlot.standalone());
         this.eidSlot.set(npcEntity.getId());
+        this.nidSlot = this.addDataSlot(DataSlot.standalone());
+        this.nidSlot.set(npcEntity.npcId);
 
         //layoutPlayerInventorySlots(10, 70);
     }
@@ -41,12 +45,27 @@ public class NpcInteractMenu extends AbstractContainerMenu {
         this.playerInventory = new InvWrapper(playerInventory);
 
         this.eidSlot = this.addDataSlot(DataSlot.standalone());
+        this.nidSlot = this.addDataSlot(DataSlot.standalone());
         
         //layoutPlayerInventorySlots(10, 70);
     }
 
+
     public NpcEntity getEntity() {
         return (NpcEntity)player.level.getEntity(eidSlot.get());
+    }
+
+    public int getEntityId(){
+        return eidSlot.get();
+    }
+
+    public NpcData getNpcData() {
+        if(!player.level.isClientSide) throw new RuntimeException("Cannot get client data on server");
+        return ClientNpcData.get(nidSlot.get());
+    }
+
+    public int getNpcId(){
+        return nidSlot.get();
     }
 
     @Override

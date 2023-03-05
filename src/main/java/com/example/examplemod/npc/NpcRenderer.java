@@ -22,10 +22,7 @@ public class NpcRenderer extends HumanoidMobRenderer<NpcEntity, NpcModel> {
     @Nonnull
     @Override
     public ResourceLocation getTextureLocation(NpcEntity entity) {
-        NpcData data = entity.getNpcData();
-        if(!data.isInitialized()) {
-            return MALE_TEXTURE;
-        }
+        NpcRenderData data = entity.getRenderData();
         switch (data.gender) {
             case MALE: return MALE_TEXTURE;
             case FEMALE: return FEMALE_TEXTURE;

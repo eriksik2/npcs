@@ -52,7 +52,7 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
     private int canvasOffsetY = 0;
 
     private int selectedNpcId = 0;
-    private ClientNpcData selectedNpcData = null;
+    private NpcData selectedNpcData = null;
 
     private ArrayList<Integer> relatedEntityIds = new ArrayList<Integer>();
     private ArrayList<Integer> relatedY = new ArrayList<Integer>();
@@ -65,9 +65,7 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
     }
 
     private void recalculateInfo() {
-        if(selectedNpcId != -1) {
-            selectedNpcData = ClientNpcData.get(selectedNpcId);
-        }
+        selectedNpcData = ClientNpcData.get(selectedNpcId);
         if(relatedEntityIds.size() != 0) return;
         if(selectedNpcId == -1) {
             // Display all npcs.
@@ -143,7 +141,7 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
 
             font.draw(matrixStack, player.getName().getString(), leftPos + PROFILE_X+8*face_scale + 2, topPos + PROFILE_Y, 0xFFFFFF);
         } else {
-            NpcData data = selectedNpcData.npcData;
+            NpcData data = selectedNpcData;
             if(data == null) {
                 font.draw(matrixStack, "Loading", leftPos + PROFILE_X+8*face_scale + 2, topPos + PROFILE_Y, 0xFFFFFF);
             } else {

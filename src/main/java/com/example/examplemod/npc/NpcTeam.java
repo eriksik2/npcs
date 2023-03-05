@@ -8,14 +8,14 @@ import net.minecraft.nbt.CompoundTag;
 
 public class NpcTeam {
 
-    private NpcWorldData manager;
+    private NpcManager manager;
     private Integer id;
     private String leader;
     private boolean isLeaderPlayer;
 
     private ArrayList<Integer> npcMembers;
 
-    public NpcTeam(Integer id, NpcWorldData manager) {
+    public NpcTeam(Integer id, NpcManager manager) {
         this.id = id;
         this.manager = manager;
         leader = null;
@@ -23,7 +23,7 @@ public class NpcTeam {
         npcMembers = new ArrayList<Integer>();
     }
 
-    public NpcTeam(CompoundTag data, NpcWorldData manager) {
+    public NpcTeam(CompoundTag data, NpcManager manager) {
         this.manager = manager;
         id = data.getInt("id");
         leader = data.getString("leader");

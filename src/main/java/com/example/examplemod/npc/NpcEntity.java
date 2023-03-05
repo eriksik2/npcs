@@ -1,5 +1,6 @@
 package com.example.examplemod.npc;
 
+import com.example.examplemod.npc.NpcData.Gender;
 import com.example.examplemod.setup.Registration;
 
 import net.minecraft.core.BlockPos;
@@ -27,24 +28,31 @@ import net.minecraftforge.network.NetworkHooks;
 
 public class NpcEntity extends PathfinderMob implements MenuProvider {
 
+    static final EntityDataAccessor<NpcRenderData> npcRenderData = SynchedEntityData.defineId(NpcEntity.class, Registration.NPC_RENDER_DATA_SERIALIZER.get());
     static final EntityDataAccessor<NpcData> npcDataSync = SynchedEntityData.defineId(NpcEntity.class, Registration.NPC_DATA_SERIALIZER.get());
-    private Integer npcId = null;
+    public Integer npcId = null;
+    public NpcData npcData = null;
 
     public NpcEntity(EntityType<NpcEntity> type, Level level) {
         super(type, level);
     }
 
-    public NpcData getNpcData() {
+    private NpcData getNpcData() {
         return this.entityData.get(npcDataSync);
     }
 
-    public void setNpcData(NpcData newData) {
+    private void setNpcData(NpcData newData) {
         this.entityData.set(npcDataSync, newData);
+    }
+
+    public NpcRenderData getRenderData() {
+        return entityData.get(npcRenderData);
     }
 
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
+        this.entityData.define(npcRenderData, new NpcRenderData(Gender.MALE));
         this.entityData.define(npcDataSync, new NpcData());
     }
 
@@ -69,17 +77,9 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     public void onAddedToWorld() {
         super.onAddedToWorld();
         if(!level.isClientSide) {
-            NpcWorldData worldData = NpcWorldData.get(level);
-            if(npcId == null) {
-                npcId = worldData.getUniqueNpcId();
-                NpcData newData = entityData.get(npcDataSync).copy();
-                newData.npcId = npcId;
-                entityData.set(npcDataSync, newData);
-            }
-            if(!getNpcData().isInitialized()) {
-                setNpcData(NpcData.generate());
-            }
-            worldData.npcIdToEntityIdMap.put(npcId, getId());
+            NpcManager worldData = NpcManager.get(level);
+            worldData.registerNpcEntity(this);
+            entityData.set(npcRenderData, new NpcRenderData(npcData.gender));
         }
     }
 
@@ -87,8 +87,8 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     public void onRemovedFromWorld() {
         super.onRemovedFromWorld();
         if(!level.isClientSide) {
-            NpcWorldData worldData = NpcWorldData.get(level);
-            worldData.npcIdToEntityIdMap.remove(npcId);
+            NpcManager worldData = NpcManager.get(level);
+            worldData.unregisterNpcEntity(this);
         }
     }
 
@@ -112,7 +112,7 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
         NpcData data = getNpcData();
         if(data.teamId == team.getId()) return;
         if(data.teamId != null) {
-            NpcWorldData worldData = NpcWorldData.get(level);
+            NpcManager worldData = NpcManager.get(level);
             NpcTeam oldTeam = worldData.getTeam(data.teamId);
             oldTeam.removeNpcId(npcId);
         }

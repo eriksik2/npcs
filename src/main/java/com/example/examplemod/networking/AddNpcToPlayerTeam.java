@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcTeam;
-import com.example.examplemod.npc.NpcWorldData;
+import com.example.examplemod.npc.NpcManager;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,7 +38,7 @@ public class AddNpcToPlayerTeam implements Message {
             if(npc == null) {
                 throw new RuntimeException("Cant find entity.");
             }
-            NpcTeam team = NpcWorldData.get(level).getPlayerTeam(sender);
+            NpcTeam team = NpcManager.get(level).getPlayerTeam(sender);
             npc.addToTeam(team);
         });
         return true;
