@@ -29,20 +29,11 @@ import net.minecraftforge.network.NetworkHooks;
 public class NpcEntity extends PathfinderMob implements MenuProvider {
 
     static final EntityDataAccessor<NpcRenderData> npcRenderData = SynchedEntityData.defineId(NpcEntity.class, Registration.NPC_RENDER_DATA_SERIALIZER.get());
-    static final EntityDataAccessor<NpcData> npcDataSync = SynchedEntityData.defineId(NpcEntity.class, Registration.NPC_DATA_SERIALIZER.get());
     public Integer npcId = null;
     public NpcData npcData = null;
 
     public NpcEntity(EntityType<NpcEntity> type, Level level) {
         super(type, level);
-    }
-
-    private NpcData getNpcData() {
-        return this.entityData.get(npcDataSync);
-    }
-
-    private void setNpcData(NpcData newData) {
-        this.entityData.set(npcDataSync, newData);
     }
 
     public NpcRenderData getRenderData() {
@@ -53,16 +44,12 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(npcRenderData, new NpcRenderData(Gender.MALE));
-        this.entityData.define(npcDataSync, new NpcData());
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag data) {
         super.readAdditionalSaveData(data);
         npcId = data.getInt("npc_id");
-        if(data.contains("npc_data")) {
-            setNpcData(new NpcData(data));
-        }
     }
 
     @Override
@@ -70,7 +57,6 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
         super.addAdditionalSaveData(data);
         data.putInt("npc_id", npcId);
         
-        data.put("npc_data", getNpcData().toCompoundTag());
     }
 
     @Override
@@ -109,17 +95,7 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
 
 
     public void addToTeam(NpcTeam team) {
-        NpcData data = getNpcData();
-        if(data.teamId == team.getId()) return;
-        if(data.teamId != null) {
-            NpcManager worldData = NpcManager.get(level);
-            NpcTeam oldTeam = worldData.getTeam(data.teamId);
-            oldTeam.removeNpcId(npcId);
-        }
-        NpcData newData = data.copy();
-        newData.teamId = team.getId();
-        setNpcData(newData);
-        team.addNpcId(npcId);
+        // TODO
     }
 
     @Override
