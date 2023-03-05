@@ -7,8 +7,10 @@ import com.example.examplemod.ExampleMod;
 import com.example.examplemod.networking.GetNpcData;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.ClientNpcData;
+import com.example.examplemod.npc.ClientNpcTeam;
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcEntity;
+import com.example.examplemod.npc.NpcTeam;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -53,8 +55,9 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
 
     private int selectedNpcId = 0;
     private NpcData selectedNpcData = null;
+    private NpcTeam selectedNpcTeam = null;
 
-    private ArrayList<Integer> relatedEntityIds = new ArrayList<Integer>();
+    private ArrayList<Integer> relatedNpcIds = new ArrayList<Integer>();
     private ArrayList<Integer> relatedY = new ArrayList<Integer>();
 
     public EncyclopediaScreen(EncyclopediaMenu container, Inventory inv, Component title) {
@@ -66,20 +69,24 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
 
     private void recalculateInfo() {
         selectedNpcData = ClientNpcData.get(selectedNpcId);
-        if(relatedEntityIds.size() != 0) return;
-        if(selectedNpcId == -1) {
-            // Display all npcs.
-            List<NpcEntity> entities = player.level.getEntities(EntityTypeTest.forClass(NpcEntity.class), player.getBoundingBox().inflate(100000), e -> true);
+        if(selectedNpcData != null && selectedNpcData.teamId != null) {
+            selectedNpcTeam = ClientNpcTeam.get(selectedNpcData.teamId);
+        } else {
+            selectedNpcTeam = null;
+        }
+        if(relatedNpcIds.size() != 0) return;
 
-            for(int i = 0; i < entities.size(); i++) {
-                relatedEntityIds.add(entities.get(i).getId());
+        if(selectedNpcTeam != null) {
+            List<Integer> members = selectedNpcTeam.getNpcIds();
+            for(int i = 0; i < members.size(); i++) {
+                relatedNpcIds.add(members.get(i));
                 relatedY.add(i * 10);
             }
         }
     }
 
     private void invalidateInfo() {
-        relatedEntityIds.clear();
+        relatedNpcIds.clear();
         relatedY.clear();
     }
 

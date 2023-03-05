@@ -2,7 +2,6 @@ package com.example.examplemod.setup;
 
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.encyclopedia.EncyclopediaMenu;
-import com.example.examplemod.npc.NpcDataSerializer;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
@@ -52,6 +51,5 @@ public class Registration {
 
 
     public static final RegistryObject<NpcRenderDataSerializer> NPC_RENDER_DATA_SERIALIZER = SERIALIZERS.register("npc_render_data_serializer", () -> new NpcRenderDataSerializer());
-    public static final RegistryObject<NpcDataSerializer> NPC_DATA_SERIALIZER = SERIALIZERS.register("npc_data_serializer", () -> new NpcDataSerializer());
 
 }

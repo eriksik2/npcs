@@ -92,12 +92,7 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
         NetworkHooks.openScreen((ServerPlayer) player, this, getOnPos());
         return super.mobInteract(player, hand);
     }
-
-
-    public void addToTeam(NpcTeam team) {
-        // TODO
-    }
-
+    
     @Override
     public Component getDisplayName() {
         return Component.literal("Npc Menu");

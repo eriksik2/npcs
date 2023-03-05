@@ -312,6 +312,7 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
      }
 
      public static void renderEntityInInventoryRaw(int p_98851_, int p_98852_, int p_98853_, float angleXComponent, float angleYComponent, LivingEntity p_98856_) {
+        if(p_98856_.isRemoved()) return;
         float f = angleXComponent;
         float f1 = angleYComponent;
         PoseStack posestack = RenderSystem.getModelViewStack();

@@ -14,7 +14,6 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 
 public class NpcManager extends SavedData {
 
-    private Level level;
     private int nextTeamId;
     private int nextNpcId;
     private HashMap<Integer, NpcTeam> teams;
@@ -31,7 +30,6 @@ public class NpcManager extends SavedData {
         DimensionDataStorage storage = ((ServerLevel)level).getDataStorage();
         NpcManager data = storage.computeIfAbsent(NpcManager::new, NpcManager::new, "npc_world_data");
         if(data == null) throw new RuntimeException("Could not get npc world data.");
-        data.level = level;
         return data;
     }
     
@@ -55,7 +53,7 @@ public class NpcManager extends SavedData {
             teams.put(key, new NpcTeam((CompoundTag)teamTag, this));
         }
         unloadedNpcs = new HashMap<Integer, PassiveNpcData>();
-        CompoundTag unloadedNpcsTag = data.getCompound("unloaded_npcs");
+        CompoundTag unloadedNpcsTag = data.getCompound("npcs");
         for(String npcKey : unloadedNpcsTag.getAllKeys()) {
             Integer key = Integer.decode(npcKey);
             Tag npcTag = unloadedNpcsTag.get(npcKey);
@@ -73,11 +71,16 @@ public class NpcManager extends SavedData {
            teamsTag.put(key.toString(), teams.get(key).toCompoundTag());
         }
         data.put("teams", teamsTag);
-        CompoundTag unloadedNpcsTag = new CompoundTag();
+
+        CompoundTag npcsTag = new CompoundTag();
         for(Integer key : unloadedNpcs.keySet()) {
-            unloadedNpcsTag.put(key.toString(), unloadedNpcs.get(key).toCompoundTag());
+            npcsTag.put(key.toString(), unloadedNpcs.get(key).toCompoundTag());
         }
-        data.put("unloaded_npcs", unloadedNpcsTag);
+        for(Integer key : loadedNpcs.keySet()) {
+            PassiveNpcData passiveData = new PassiveNpcData(loadedNpcs.get(key));
+            npcsTag.put(key.toString(), passiveData.toCompoundTag());
+        }
+        data.put("npcs", npcsTag);
         return data;
     }
 
@@ -99,6 +102,7 @@ public class NpcManager extends SavedData {
             }
             loadedNpcs.put(npcId, entity);
         }
+        setDirty();
     }
 
     public void unregisterNpcEntity(NpcEntity entity) {
@@ -106,6 +110,7 @@ public class NpcManager extends SavedData {
         if(npcId != null) {
             loadedNpcs.remove(npcId);
             unloadedNpcs.put(npcId, new PassiveNpcData(entity));
+            setDirty();
         }
     }
 
@@ -132,6 +137,30 @@ public class NpcManager extends SavedData {
         return loadedNpcs.get(npcId);
     }
 
+    public void addNpcToTeam(NpcData data, NpcTeam team) {
+        if(data.teamId != null) {
+            if(data.teamId == team.getId()) return;
+            NpcTeam oldTeam = teams.get(data.teamId);
+            if(oldTeam != null) {
+                oldTeam.removeNpcId(data.npcId);
+            }
+        }
+        team.addNpcId(data.npcId);
+        data.teamId = team.getId();
+        setDirty();
+    }
+
+    public void removeNpcFromTeam(NpcData data) {
+        if(data.teamId != null) {
+            NpcTeam team = teams.get(data.teamId);
+            if(team != null) {
+                team.removeNpcId(data.npcId);
+            }
+            data.teamId = null;
+            setDirty();
+        }
+    }
+
     public NpcTeam createTeam() {
         Integer id = nextTeamId;
         ++nextTeamId;
@@ -146,18 +175,17 @@ public class NpcManager extends SavedData {
     }
 
     public NpcTeam getPlayerTeam(Player player) {
-        String playerName = player.getName().getString();
         NpcTeam team = null;
         for(Integer key : teams.keySet()) {
             NpcTeam t = teams.get(key);
-            if(t.getLeader() == playerName) {
+            if(t.isOwner(player)) {
                 team = t;
                 break;
             }
         }
         if(team == null) {
             team = createTeam()
-                .setLeader(playerName);
+                .addOwner(player);
         }
         return team;
     }

@@ -62,6 +62,12 @@ public class Messages {
                 .consumerMainThread(GetNpcData::handle)
                 .add();
 
+        net.messageBuilder(GetTeamData.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(GetTeamData::new)
+                .encoder(GetTeamData::toBytes)
+                .consumerMainThread(GetTeamData::handle)
+                .add();
+
         net.messageBuilder(SyncTrackingToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(SyncTrackingToClient::new)
                 .encoder(SyncTrackingToClient::toBytes)
@@ -72,6 +78,12 @@ public class Messages {
                 .decoder(SyncNpcDataToClient::new)
                 .encoder(SyncNpcDataToClient::toBytes)
                 .consumerMainThread(SyncNpcDataToClient::handle)
+                .add();
+
+        net.messageBuilder(SyncTeamDataToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncTeamDataToClient::new)
+                .encoder(SyncTeamDataToClient::toBytes)
+                .consumerMainThread(SyncTeamDataToClient::handle)
                 .add();
     }
 
