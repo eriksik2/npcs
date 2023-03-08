@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.examplemod.npc.role.NpcRole;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -21,11 +23,15 @@ public class NpcTeam {
 
     private ArrayList<Integer> npcMembers;
 
+    private ArrayList<NpcRole> roles;
+    private int nextRoleId = 0;
+
     public NpcTeam(Integer id, NpcManager manager) {
         this.id = id;
         this.manager = manager;
         owners = new ArrayList<UUID>();
         npcMembers = new ArrayList<Integer>();
+        roles = new ArrayList<NpcRole>();
     }
 
     public NpcTeam(CompoundTag data, NpcManager manager) {
@@ -43,6 +49,12 @@ public class NpcTeam {
         for(int value : data.getIntArray("npcMembers")) {
             npcMembers.add(value);
         }
+
+        roles = new ArrayList<NpcRole>();
+        for(Tag value : data.getList("roles", Tag.TAG_COMPOUND)) {
+            roles.add(new NpcRole((CompoundTag) value, this));
+        }
+        nextRoleId = data.getInt("nextRoleId");
     }
 
     public CompoundTag toCompoundTag() {
@@ -54,8 +66,17 @@ public class NpcTeam {
         for(UUID owner : owners) {
             ownersTag.add(StringTag.valueOf(owner.toString()));
         }
+        data.put("owners", ownersTag);
 
         data.putIntArray("npcMembers", npcMembers);
+
+        ListTag rolesTag = new ListTag();
+        for(NpcRole role : roles) {
+            rolesTag.add(role.toCompoundTag());
+        }
+        data.put("roles", rolesTag);
+        data.putInt("nextRoleId", nextRoleId);
+
         return data;
     }
 
@@ -65,6 +86,10 @@ public class NpcTeam {
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeNbt(toCompoundTag());
+    }
+
+    public void setDirty() {
+        manager.setDirty();
     }
 
     Integer getId() {
@@ -93,14 +118,14 @@ public class NpcTeam {
 
     public NpcTeam addOwner(Player player) {
         owners.add(player.getUUID());
-        if(manager == null) throw new RuntimeException("NpcTeam.setLeader presumably called on the client.");
+        if(manager == null) throw new RuntimeException("NpcTeam.addOwner presumably called on the client.");
         manager.setDirty();
         return this;
     }
 
     public NpcTeam removeOwner(Player player) {
         owners.remove(player.getUUID());
-        if(manager == null) throw new RuntimeException("NpcTeam.setLeader presumably called on the client.");
+        if(manager == null) throw new RuntimeException("NpcTeam.removeOwner presumably called on the client.");
         manager.setDirty();
         return this;
     }
@@ -111,14 +136,45 @@ public class NpcTeam {
 
     public NpcTeam addNpcId(Integer npcId) {
         npcMembers.add(npcId);
-        if(manager == null) throw new RuntimeException("NpcTeam.setLeader presumably called on the client.");
+        if(manager == null) throw new RuntimeException("NpcTeam.addNpcId presumably called on the client.");
         manager.setDirty();
         return this;
     }
 
     public NpcTeam removeNpcId(Integer npcId) {
-        npcMembers.remove(npcId);
-        if(manager == null) throw new RuntimeException("NpcTeam.setLeader presumably called on the client.");
+        boolean didRemove = npcMembers.remove(npcId);
+        if(!didRemove) return this;
+        for(NpcRole role : roles) {
+            role.removeNpcId(npcId);
+        }
+        if(manager == null) throw new RuntimeException("NpcTeam.removeNpcId presumably called on the client.");
+        manager.setDirty();
+        return this;
+    }
+
+    public List<NpcRole> getRoles() {
+        return roles;
+    }
+
+    public NpcRole getRoleOf(int npcId) {
+        for(NpcRole role : roles) {
+            if(role.getNpcIds().contains(npcId)) return role;
+        }
+        return null;
+    }
+
+    public NpcRole addRole(String name, String description) {
+        NpcRole role = new NpcRole(nextRoleId, name, description, this);
+        roles.add(role);
+        nextRoleId++;
+        if(manager == null) throw new RuntimeException("NpcTeam.addRole presumably called on the client.");
+        manager.setDirty();
+        return role;
+    }
+
+    public NpcTeam removeRole(int roleId) {
+        roles.removeIf(role -> role.getId() == roleId);
+        if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
         manager.setDirty();
         return this;
     }
