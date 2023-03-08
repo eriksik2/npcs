@@ -124,13 +124,8 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
         }
         String npcName = npcData.name;
         font.draw(matrixStack, npcName, NAME_X, NAME_Y, 0x000000);
-        font.draw(matrixStack, "" + npcData.npcId, NAME_X, NAME_Y - 10, 0x000000);
         if(mouseInName(mouseX, mouseY)) {
-            hLine(matrixStack, NAME_X, NAME_X + font.width(npcName), NAME_Y + font.lineHeight, 0x000000);
-        }
-
-        if(npcData.teamId != null) {
-            font.draw(matrixStack, npcData.teamId.toString(), NAME_X + font.width(npcName) + 10, NAME_Y, 0x000000);
+            hLine(matrixStack, NAME_X, NAME_X + font.width(npcName), NAME_Y + font.lineHeight, -1072689136);
         }
 
         renderTrackButton(matrixStack, mouseX, mouseY);
