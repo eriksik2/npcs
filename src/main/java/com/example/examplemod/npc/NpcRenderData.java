@@ -11,6 +11,10 @@ public class NpcRenderData {
         this.gender = gender;
     }
 
+    public NpcRenderData(NpcData data) {
+        this(data.gender);
+    }
+
     public NpcRenderData(FriendlyByteBuf buf) {
         gender = buf.readEnum(Gender.class);
     }

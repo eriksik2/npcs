@@ -30,7 +30,6 @@ public class SyncNpcDataToClient implements Message {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
             // Here we are client side.
-            LogUtils.getLogger().info("GetNpcData: " + data);
             ClientNpcData.set(data);
         });
         return true;

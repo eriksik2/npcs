@@ -45,7 +45,6 @@ public class GetNpcData implements Message {
             ServerPlayer player = ctx.getSender();
             NpcManager manager = NpcManager.get(player.level);
             NpcData data = manager.getNpcData(npcId);
-            LogUtils.getLogger().info("GetNpcData: " + data);
             if(data == null) {
                 return;
             }
@@ -54,4 +53,5 @@ public class GetNpcData implements Message {
         });
         return true;
     }
+
 }

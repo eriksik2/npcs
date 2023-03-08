@@ -6,14 +6,23 @@ import com.example.examplemod.networking.SyncTrackingToClient;
 
 
 public class ClientTrackedObjects {
-    private ArrayList<TrackedEntityData> trackedEntities;
+    private ArrayList<NpcTrackingData> trackedNpcs;
     public static final ClientTrackedObjects instance = new ClientTrackedObjects();
 
     public static void set(SyncTrackingToClient message) {
-        instance.trackedEntities = message.entities;
+        instance.trackedNpcs = message.npcs;
     }
 
-    public static ArrayList<TrackedEntityData> getEntities() {
-        return instance.trackedEntities;
+    public static ArrayList<NpcTrackingData> getTrackedNpcs() {
+        return instance.trackedNpcs;
+    }
+
+    public static boolean isTracked(int npcId) {
+        for (NpcTrackingData npc : instance.trackedNpcs) {
+            if (npc.npcId == npcId) {
+                return true;
+            }
+        }
+        return false;
     }
 }

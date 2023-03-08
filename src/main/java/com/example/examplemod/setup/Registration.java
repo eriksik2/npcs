@@ -2,11 +2,14 @@ package com.example.examplemod.setup;
 
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.encyclopedia.EncyclopediaMenu;
+import com.example.examplemod.networking.ClientDataManager;
+import com.example.examplemod.networking.NpcClientDataManager;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
 
 import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.MenuType;
@@ -18,6 +21,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
 
 public class Registration {
@@ -26,7 +30,9 @@ public class Registration {
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ExampleMod.MODID);
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, ExampleMod.MODID);
     static final DeferredRegister<EntityDataSerializer<?>> SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS.location().getNamespace());
-
+    
+    public static final DeferredRegister<ClientDataManager<?>> MESSAGE_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "message_brokers"), ExampleMod.MODID);
+    public static final RegistryObject<NpcClientDataManager> NPC_DATA_BROKER = MESSAGE_BROKERS.register("npc_data_broker", () -> NpcClientDataManager.instance);
 
     public static void init() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -35,6 +41,7 @@ public class Registration {
         ENTITIES.register(bus);
         MENUS.register(bus);
         SERIALIZERS.register(bus);
+        MESSAGE_BROKERS.register(bus);
     }
 
     public static final RegistryObject<EntityType<NpcEntity>> NPC_ENTITY = ENTITIES.register("npc_entity", () -> EntityType.Builder.of(NpcEntity::new, MobCategory.CREATURE)

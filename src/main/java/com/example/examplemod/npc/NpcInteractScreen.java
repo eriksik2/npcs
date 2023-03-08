@@ -9,7 +9,8 @@ import com.example.examplemod.ExampleMod;
 import com.example.examplemod.networking.AddNpcToPlayerTeam;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.OpenEncyclopedia;
-import com.example.examplemod.networking.ToggleTrackingEntity;
+import com.example.examplemod.networking.ToggleTrackingNpc;
+import com.example.examplemod.tracking.ClientTrackedObjects;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,6 +29,14 @@ import net.minecraft.world.entity.player.Inventory;
 public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> {
     static final int NAME_X = 7;
     static final int NAME_Y = 7;
+
+    static final int TRACK_BUTTON_X = 55;
+    static final int TRACK_BUTTON_Y = 4;
+    static final int TRACK_BUTTON_PADDING_X1 = 4;
+    static final int TRACK_BUTTON_PADDING_X2 = 9;
+    static final int TRACK_BUTTON_PADDING_Y = 3;
+    boolean mousePressedTrackButton = false;
+
 
     static final int SCROLLBAR_W = 7;
 
@@ -115,6 +124,7 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
         }
         String npcName = npcData.name;
         font.draw(matrixStack, npcName, NAME_X, NAME_Y, 0x000000);
+        font.draw(matrixStack, "" + npcData.npcId, NAME_X, NAME_Y - 10, 0x000000);
         if(mouseInName(mouseX, mouseY)) {
             hLine(matrixStack, NAME_X, NAME_X + font.width(npcName), NAME_Y + font.lineHeight, 0x000000);
         }
@@ -193,27 +203,33 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
     private void renderTrackButton(PoseStack stack, int mouseX, int mouseY) {
         Font font = Minecraft.getInstance().font;
         if(npcData == null) return;
-        int trackX = NAME_X + font.width(FormattedText.of(npcData.name)) + 5;
-        int trackY = NAME_Y - 1;
-        int trackH = font.lineHeight;
-        int trackW = trackH;
-        if(mouseInTrackButton(mouseX, mouseY)) {
-            fillGradient(stack, trackX, trackY, trackX+trackW, trackY+trackH, -0x194D33, -0x7B7B7B);
+        int trackX = TRACK_BUTTON_X;
+        int trackY = TRACK_BUTTON_Y;
+        int trackH = 13;
+        int trackW = 46;
+        ResourceLocation trackButton = new ResourceLocation(ExampleMod.MODID, "textures/gui/button.png");
+        if(mousePressedTrackButton) {
+            RenderSystem.setShaderTexture(0, trackButton);
+            blit(stack, trackX, trackY, getBlitOffset(), 0, 13, 46, 13, 92, 26);
+            //fillGradient(stack, trackX, trackY, trackX+trackW, trackY+trackH, -0x194D33, -0x7B7B7B);
         } else {
-            fillGradient(stack, trackX, trackY, trackX+trackW, trackY+trackH, -1072689136, -804253680);
+            RenderSystem.setShaderTexture(0, trackButton);
+            blit(stack, trackX, trackY, getBlitOffset(), 0, 0, 46, 13, 92, 26);
+            //fillGradient(stack, trackX, trackY, trackX+trackW, trackY+trackH, -1072689136, -804253680);
         }
-
-        int textX = trackX + trackW/2 - font.width("T")/2 + 1;
-        font.draw(stack, "T", textX, trackY + 1, 0xffffff);
+        boolean isUntrack = npcData != null && ClientTrackedObjects.isTracked(npcData.npcId);
+        String text = isUntrack ? "Untrack" : "Track";
+        int padding = isUntrack ? TRACK_BUTTON_PADDING_X1 : TRACK_BUTTON_PADDING_X2;
+        int textX = trackX + padding;
+        font.draw(stack, text, textX, trackY + TRACK_BUTTON_PADDING_Y, 0xffffff);
     }
 
     private boolean mouseInTrackButton(double mouseX, double mouseY) {
-        Font font = Minecraft.getInstance().font;
         if(npcData == null) return false;
-        int trackX = NAME_X + font.width(FormattedText.of(npcData.name)) + 5;
-        int trackY = NAME_Y - 1;
-        int trackH = font.lineHeight;
-        int trackW = trackH;
+        int trackX = TRACK_BUTTON_X;
+        int trackY = TRACK_BUTTON_Y;
+        int trackH = 13;
+        int trackW = 46;
         return mouseX >= leftPos + trackX && mouseX < leftPos + trackX + trackW
         && mouseY >= topPos + trackY && mouseY < topPos + trackY + trackH;
     }
@@ -265,7 +281,8 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
     }
 
     private void clickedTrackButton() {
-        ToggleTrackingEntity message = new ToggleTrackingEntity(menu.getEntityId());
+        if(npcData == null) return;
+        ToggleTrackingNpc message = new ToggleTrackingNpc(npcData.npcId);
         Messages.sendToServer(message);
     }
 
@@ -277,6 +294,16 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if(mouseInTrackButton(mouseX, mouseY)) {
+            mousePressedTrackButton = true;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        mousePressedTrackButton = false;
         if(mouseInOptions(mouseX, mouseY)) {
             for(int i = 0; i < options.size(); ++i) {
                 if(mouseInOption(mouseX, mouseY, i)) {
@@ -306,6 +333,7 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
     }
 
     public static void renderEntityInInventory(int p_98851_, int p_98852_, int p_98853_, float p_98854_, float p_98855_, LivingEntity p_98856_) {
+        if (p_98856_ == null) return;
         float f = (float)Math.atan((double)(p_98854_ / 40.0F));
         float f1 = (float)Math.atan((double)(p_98855_ / 40.0F));
         renderEntityInInventoryRaw(p_98851_, p_98852_, p_98853_, f, f1, p_98856_);

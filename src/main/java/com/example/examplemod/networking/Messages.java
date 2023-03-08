@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import com.example.examplemod.ExampleMod;
 import com.mojang.realmsclient.client.Request.Get;
 
+import ca.weblite.objc.Client;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +36,18 @@ public class Messages {
 
         INSTANCE = net;
 
+        net.messageBuilder(ClientDataManagerMessageToServer.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ClientDataManagerMessageToServer::new)
+                .encoder(ClientDataManagerMessageToServer::toBytes)
+                .consumerMainThread(ClientDataManagerMessageToServer::handle)
+                .add();
+
+        net.messageBuilder(ClientDataManagerMessageToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(ClientDataManagerMessageToClient::new)
+                .encoder(ClientDataManagerMessageToClient::toBytes)
+                .consumerMainThread(ClientDataManagerMessageToClient::handle)
+                .add();
+
         // Register all our packets. We only have one right now. The new message has a unique ID, an indication
         // of how it is going to be used (from client to server) and ways to encode and decode it. Finally 'handle'
         // will actually execute when the packet is received
@@ -44,10 +57,10 @@ public class Messages {
                 .consumerMainThread(AddNpcToPlayerTeam::handle)
                 .add();
 
-        net.messageBuilder(ToggleTrackingEntity.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .decoder(ToggleTrackingEntity::new)
-                .encoder(ToggleTrackingEntity::toBytes)
-                .consumerMainThread(ToggleTrackingEntity::handle)
+        net.messageBuilder(ToggleTrackingNpc.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ToggleTrackingNpc::new)
+                .encoder(ToggleTrackingNpc::toBytes)
+                .consumerMainThread(ToggleTrackingNpc::handle)
                 .add();
 
         net.messageBuilder(OpenEncyclopedia.class, id(), NetworkDirection.PLAY_TO_SERVER)

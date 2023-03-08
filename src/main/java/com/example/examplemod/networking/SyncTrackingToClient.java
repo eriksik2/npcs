@@ -5,44 +5,46 @@ import java.util.function.Supplier;
 
 import org.antlr.v4.codegen.model.Sync;
 
+import com.example.examplemod.npc.NpcEntity;
+import com.example.examplemod.npc.NpcManager;
 import com.example.examplemod.tracking.ClientTrackedObjects;
 import com.example.examplemod.tracking.PlayerTrackedObjects;
-import com.example.examplemod.tracking.TrackedEntityData;
+import com.example.examplemod.tracking.NpcTrackingData;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 
 public class SyncTrackingToClient implements Message {
     public static final String MESSAGE = "message.PacketSyncTrackingToClient";
     
-    public ArrayList<TrackedEntityData> entities = new ArrayList<TrackedEntityData>();
+    public ArrayList<NpcTrackingData> npcs = new ArrayList<NpcTrackingData>();
 
     public SyncTrackingToClient(PlayerTrackedObjects objects, Player player) {
         Level level = player.level;
-        for(Integer entityId : objects.getTrackedEntities()) {
-            Entity entity = level.getEntity(entityId);
-            if (entity != null) {
-                entities.add(new TrackedEntityData(entityId, entity.getX(), entity.getY(), entity.getZ()));
-            }
+        NpcManager npcManager = NpcManager.get(level);
+        for(Integer npcId : objects.getTrackedNpcs()) {
+            Vec3 pos = npcManager.getNpcPos(npcId);
+            npcs.add(new NpcTrackingData(npcId, pos.x, pos.y, pos.z));
         }
     }
 
     public SyncTrackingToClient(FriendlyByteBuf buf) {
-        entities = new ArrayList<TrackedEntityData>();
+        npcs = new ArrayList<NpcTrackingData>();
         int size = buf.readInt();
         for (int i = 0; i < size; i++) {
-            TrackedEntityData data = new TrackedEntityData(0, 0, 0, 0);
+            NpcTrackingData data = new NpcTrackingData(0, 0, 0, 0);
             data.fromBytes(buf);
-            entities.add(data);
+            npcs.add(data);
         }
     }
 
     public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(entities.size());
-        for (TrackedEntityData data : entities) {
+        buf.writeInt(npcs.size());
+        for (NpcTrackingData data : npcs) {
             data.toBytes(buf);
         }
     }

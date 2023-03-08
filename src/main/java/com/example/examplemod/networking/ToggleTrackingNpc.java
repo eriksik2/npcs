@@ -13,21 +13,21 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
 
-public class ToggleTrackingEntity implements Message {
+public class ToggleTrackingNpc implements Message {
     public static final String MESSAGE = "message.ToggleTrackingEntity";
     
-    private final int entityId;
+    private final int npcId;
 
-    public ToggleTrackingEntity(int entityId) {
-        this.entityId = entityId;
+    public ToggleTrackingNpc(int npcId) {
+        this.npcId = npcId;
     }
 
-    public ToggleTrackingEntity(FriendlyByteBuf buf) {
-        entityId = buf.readInt();
+    public ToggleTrackingNpc(FriendlyByteBuf buf) {
+        npcId = buf.readInt();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(entityId);
+        buf.writeInt(npcId);
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
@@ -37,11 +37,10 @@ public class ToggleTrackingEntity implements Message {
             ServerPlayer player = ctx.getSender();
             PlayerTrackedObjects trackedObjects = player.getCapability(PlayerTrackingProvider.TRACKED_OBJECTS)
                     .orElse(null);
-            Entity entity = player.level.getEntity(entityId);
-            if(!trackedObjects.isTrackingEntity(entity)) {
-                trackedObjects.trackEntity(entity);
+            if(!trackedObjects.isTrackingNpc(npcId)) {
+                trackedObjects.trackNpc(npcId);
             } else {
-                trackedObjects.untrackEntity(entity);
+                trackedObjects.untrackNpc(npcId);
             }
         });
         return true;

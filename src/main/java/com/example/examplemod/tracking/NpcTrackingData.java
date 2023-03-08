@@ -2,26 +2,26 @@ package com.example.examplemod.tracking;
 
 import net.minecraft.network.FriendlyByteBuf;
 
-public class TrackedEntityData {
-    public int entityId;
+public class NpcTrackingData {
+    public int npcId;
     public double x, y, z;
 
-    public TrackedEntityData(int entityId, double x, double y, double z) {
-        this.entityId = entityId;
+    public NpcTrackingData(int npcId, double x, double y, double z) {
+        this.npcId = npcId;
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
     public void fromBytes(FriendlyByteBuf buf) {
-        entityId = buf.readInt();
+        npcId = buf.readInt();
         x = buf.readDouble();
         y = buf.readDouble();
         z = buf.readDouble();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(entityId);
+        buf.writeInt(npcId);
         buf.writeDouble(x);
         buf.writeDouble(y);
         buf.writeDouble(z);

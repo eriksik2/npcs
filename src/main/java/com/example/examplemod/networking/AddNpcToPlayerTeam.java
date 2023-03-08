@@ -3,7 +3,6 @@ package com.example.examplemod.networking;
 import java.util.function.Supplier;
 
 import com.example.examplemod.npc.NpcData;
-import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcTeam;
 import com.example.examplemod.npc.NpcManager;
 

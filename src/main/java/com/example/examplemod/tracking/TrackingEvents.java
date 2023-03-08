@@ -33,7 +33,7 @@ public class TrackingEvents {
 
     public static void clientSetup() {
         IEventBus bus = MinecraftForge.EVENT_BUS;
-        bus.addListener(TrackingEvents::onRenderLiving);
+        //bus.addListener(TrackingEvents::onRenderLiving);
     }
 
     public static void onWorldTick(TickEvent.LevelTickEvent event) {
@@ -78,12 +78,15 @@ public class TrackingEvents {
         event.register(PlayerTrackedObjects.class);
     }
 
-    public static void onRenderLiving(RenderLivingEvent<NpcEntity, NpcModel> event) {
-        List<TrackedEntityData> entities = ClientTrackedObjects.getEntities();
+    /*public static void onRenderLiving(RenderLivingEvent<NpcEntity, NpcModel> event) {
+        List<NpcTrackingData> npcs = ClientTrackedObjects.getTrackedNpcs();
 
         //Player player = Minecraft.getInstance().player;
-        for(TrackedEntityData entity : entities) {
-            if (entity.entityId == event.getEntity().getId()) {
+        if(npcs == null) {
+            return;
+        }
+        for(NpcTrackingData npc : npcs) {
+            if (npc.npcId == event.getEntity().getId()) {
                 event.getPoseStack().pushPose();
                 Quaternionf rotation = Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation();
                 event.getPoseStack().mulPose(rotation);
@@ -93,5 +96,5 @@ public class TrackingEvents {
                 event.getPoseStack().popPose();
             }
         }
-    }
+    }*/
 }

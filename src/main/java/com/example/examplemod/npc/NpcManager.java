@@ -4,13 +4,18 @@ import java.util.HashMap;
 
 import javax.annotation.Nonnull;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Position;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket.Pos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.phys.Vec3;
 
 public class NpcManager extends SavedData {
 
@@ -135,6 +140,39 @@ public class NpcManager extends SavedData {
 
     public NpcEntity getNpcEntity(int npcId) {
         return loadedNpcs.get(npcId);
+    }
+
+    public Vec3 getNpcPos(int npcId) {
+        NpcEntity entity = loadedNpcs.get(npcId);
+        if(entity != null) {
+            return entity.position();
+        }
+        PassiveNpcData data = unloadedNpcs.get(npcId);
+        if(data != null) {
+            return new Vec3(data.x, data.y, data.z);
+        }
+        return null;
+    }
+
+    public void removeNpc(int npcId) {
+        boolean didRemove = false;
+        NpcEntity entity = loadedNpcs.get(npcId);
+        if(entity != null) {
+            if(entity.isAddedToWorld()) {
+                entity.remove(RemovalReason.DISCARDED);
+            }
+            NpcEntity removed = loadedNpcs.remove(npcId);
+            if(removed != null) didRemove = true;
+        }
+        PassiveNpcData removed = unloadedNpcs.remove(npcId);
+        if(removed != null) didRemove = true;
+
+        if(didRemove) {
+            for(NpcTeam team : teams.values()) {
+                team.removeNpcId(npcId);
+            }
+            setDirty();
+        }
     }
 
     public void addNpcToTeam(NpcData data, NpcTeam team) {

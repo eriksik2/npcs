@@ -32,6 +32,7 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     public Integer npcId = null;
     public NpcData npcData = null;
 
+
     public NpcEntity(EntityType<NpcEntity> type, Level level) {
         super(type, level);
     }
@@ -56,7 +57,11 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     public void addAdditionalSaveData(CompoundTag data) {
         super.addAdditionalSaveData(data);
         data.putInt("npc_id", npcId);
-        
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
     }
 
     @Override
@@ -73,16 +78,21 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     public void onRemovedFromWorld() {
         super.onRemovedFromWorld();
         if(!level.isClientSide) {
+            RemovalReason reason = this.getRemovalReason();
+            boolean shouldSave = reason==null ? true : reason.shouldSave();
+            boolean shouldDestroy = reason==null ? false : reason.shouldDestroy();
             NpcManager worldData = NpcManager.get(level);
-            worldData.unregisterNpcEntity(this);
+            if(shouldSave) {
+                worldData.unregisterNpcEntity(this);
+            }
+            if(shouldDestroy) {
+                worldData.removeNpc(npcId);
+            }
         }
     }
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
     }
 
     @Override
