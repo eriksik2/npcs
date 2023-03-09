@@ -8,8 +8,11 @@ import org.joml.Quaternionf;
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.networking.AddNpcToPlayerTeam;
 import com.example.examplemod.networking.Messages;
+import com.example.examplemod.networking.NpcDataServerToClientBroker;
+import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.OpenEncyclopedia;
 import com.example.examplemod.networking.ToggleTrackingNpc;
+import com.example.examplemod.setup.Registration;
 import com.example.examplemod.tracking.ClientTrackedObjects;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -70,6 +73,8 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
     private final NpcScreenRandomLookHelper lookHelper;
 
     private NpcData npcData;
+
+    private NpcTeamServerToClientBroker npcTeamBroker = Registration.NPC_TEAM_BROKER.get();
 
     public NpcInteractScreen(NpcInteractMenu container, Inventory inv, Component name) {
         super(container, inv, name);
@@ -270,7 +275,10 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
             if(npcData.teamId == null){
                 displayText = "No, I'm on my own.";
             } else {
-                displayText = "Yes, I'm with group " + npcData.teamId;
+                npcTeamBroker.get(npcData.teamId, (team) -> {
+                    displayText = "Yes, I'm with " + team.getName();
+                });
+                //displayText = "Yes, I'm with group " + npcData.teamId;
             }
         }
     }

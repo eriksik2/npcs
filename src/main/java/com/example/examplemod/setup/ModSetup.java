@@ -1,7 +1,7 @@
 package com.example.examplemod.setup;
 
 import com.example.examplemod.ExampleMod;
-import com.example.examplemod.networking.ClientDataManager;
+import com.example.examplemod.networking.ServerToClientBroker;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.tracking.TrackingEvents;
@@ -46,7 +46,7 @@ public class ModSetup {
 
     @SubscribeEvent
     public static void onNewRegistryEvent(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<ClientDataManager<?>>()
+        event.create(new RegistryBuilder<ServerToClientBroker<?>>()
             .setName(new ResourceLocation(ExampleMod.MODID, "message_brokers")));
     }
 

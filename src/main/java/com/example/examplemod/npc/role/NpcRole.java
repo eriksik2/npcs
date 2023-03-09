@@ -3,7 +3,7 @@ package com.example.examplemod.npc.role;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.examplemod.npc.NpcTeam;
+import com.example.examplemod.npc.team.NpcTeam;
 
 import net.minecraft.nbt.CompoundTag;
 

@@ -8,14 +8,13 @@ import org.joml.Quaternionf;
 
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.networking.Messages;
-import com.example.examplemod.networking.NpcClientDataManager;
+import com.example.examplemod.networking.NpcDataServerToClientBroker;
+import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.OpenEncyclopedia;
-import com.example.examplemod.npc.ClientNpcData;
-import com.example.examplemod.npc.ClientNpcTeam;
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcRenderData;
 import com.example.examplemod.npc.NpcRenderer;
-import com.example.examplemod.npc.NpcTeam;
+import com.example.examplemod.npc.team.NpcTeam;
 import com.example.examplemod.setup.Registration;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -85,7 +84,8 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
     private ArrayList<Integer> relatedX = new ArrayList<Integer>();
     private ArrayList<Integer> relatedY = new ArrayList<Integer>();
 
-    private NpcClientDataManager npcDataBroker = Registration.NPC_DATA_BROKER.get();
+    private NpcDataServerToClientBroker npcDataBroker = Registration.NPC_DATA_BROKER.get();
+    private NpcTeamServerToClientBroker npcTeamBroker = Registration.NPC_TEAM_BROKER.get();
 
     public EncyclopediaScreen(EncyclopediaMenu container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -110,7 +110,7 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
     private void recalculateInfo() {
         selectedNpcData = npcDataBroker.get(selectedNpcId);
         if(selectedNpcData != null && selectedNpcData.teamId != null) {
-            selectedNpcTeam = ClientNpcTeam.get(selectedNpcData.teamId);
+            selectedNpcTeam = npcTeamBroker.get(selectedNpcData.teamId);
         } else {
             selectedNpcTeam = null;
         }

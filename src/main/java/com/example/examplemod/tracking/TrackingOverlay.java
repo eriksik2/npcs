@@ -5,7 +5,7 @@ import java.util.List;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
-import com.example.examplemod.networking.NpcClientDataManager;
+import com.example.examplemod.networking.NpcDataServerToClientBroker;
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcRenderData;
 import com.example.examplemod.npc.NpcRenderer;
@@ -73,7 +73,7 @@ public class TrackingOverlay {
                 else if(outsideBottom)
                     ttext = "↓";
 
-                NpcData npcData = NpcClientDataManager.instance.get(trackedNpcs.get(i).npcId);
+                NpcData npcData = NpcDataServerToClientBroker.instance.get(trackedNpcs.get(i).npcId);
                 if(npcData != null) {
                     int nameWidth = font.width(npcData.name);
                     double textPos = x2 + 7;

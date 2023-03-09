@@ -7,6 +7,7 @@ import com.example.examplemod.encyclopedia.EncyclopediaScreen;
 import com.example.examplemod.npc.NpcInteractScreen;
 import com.example.examplemod.npc.NpcModel;
 import com.example.examplemod.npc.NpcRenderer;
+import com.example.examplemod.npc.team.TeamEditScreen;
 import com.example.examplemod.tracking.TrackingEvents;
 import com.example.examplemod.tracking.TrackingOverlay;
 
@@ -28,6 +29,7 @@ public class ClientSetup {
         event.enqueueWork(() -> {
             MenuScreens.register(Registration.NPC_MENU.get(), NpcInteractScreen::new);
             MenuScreens.register(Registration.ENCYCLOPEDIA_MENU.get(), EncyclopediaScreen::new);
+            MenuScreens.register(Registration.TEAM_EDIT_MENU.get(), TeamEditScreen::new);
         });
         MinecraftForge.EVENT_BUS.addListener(KeyInputHandler::onKeyInput);
     }

@@ -2,11 +2,13 @@ package com.example.examplemod.setup;
 
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.encyclopedia.EncyclopediaMenu;
-import com.example.examplemod.networking.ClientDataManager;
-import com.example.examplemod.networking.NpcClientDataManager;
+import com.example.examplemod.networking.ServerToClientBroker;
+import com.example.examplemod.networking.NpcDataServerToClientBroker;
+import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
+import com.example.examplemod.npc.team.TeamEditMenu;
 
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.ResourceLocation;
@@ -21,7 +23,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
 
 public class Registration {
@@ -31,8 +32,9 @@ public class Registration {
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, ExampleMod.MODID);
     static final DeferredRegister<EntityDataSerializer<?>> SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS.location().getNamespace());
     
-    public static final DeferredRegister<ClientDataManager<?>> MESSAGE_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "message_brokers"), ExampleMod.MODID);
-    public static final RegistryObject<NpcClientDataManager> NPC_DATA_BROKER = MESSAGE_BROKERS.register("npc_data_broker", () -> NpcClientDataManager.instance);
+    public static final DeferredRegister<ServerToClientBroker<?>> MESSAGE_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "message_brokers"), ExampleMod.MODID);
+    public static final RegistryObject<NpcDataServerToClientBroker> NPC_DATA_BROKER = MESSAGE_BROKERS.register("npc_data_broker", () -> NpcDataServerToClientBroker.instance);
+    public static final RegistryObject<NpcTeamServerToClientBroker> NPC_TEAM_BROKER = MESSAGE_BROKERS.register("npc_team_broker", () -> NpcTeamServerToClientBroker.instance);
 
     public static void init() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -55,6 +57,7 @@ public class Registration {
 
     public static final RegistryObject<MenuType<NpcInteractMenu>> NPC_MENU = MENUS.register("npc_menu", () -> IForgeMenuType.create((windowId, inv, data) -> new NpcInteractMenu(windowId, data.readBlockPos(), inv, inv.player)));
     public static final RegistryObject<MenuType<EncyclopediaMenu>> ENCYCLOPEDIA_MENU = MENUS.register("encyclopedia_menu", () -> IForgeMenuType.create((windowId, inv, data) -> new EncyclopediaMenu(windowId, inv.player, null)));
+    public static final RegistryObject<MenuType<TeamEditMenu>> TEAM_EDIT_MENU = MENUS.register("team_edit_menu", () -> IForgeMenuType.create((windowId, inv, data) -> new TeamEditMenu(windowId)));
 
 
     public static final RegistryObject<NpcRenderDataSerializer> NPC_RENDER_DATA_SERIALIZER = SERIALIZERS.register("npc_render_data_serializer", () -> new NpcRenderDataSerializer());

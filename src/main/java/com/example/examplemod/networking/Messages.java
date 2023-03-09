@@ -36,16 +36,16 @@ public class Messages {
 
         INSTANCE = net;
 
-        net.messageBuilder(ClientDataManagerMessageToServer.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .decoder(ClientDataManagerMessageToServer::new)
-                .encoder(ClientDataManagerMessageToServer::toBytes)
-                .consumerMainThread(ClientDataManagerMessageToServer::handle)
+        net.messageBuilder(ServerToClientBrokerRequest.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ServerToClientBrokerRequest::new)
+                .encoder(ServerToClientBrokerRequest::toBytes)
+                .consumerMainThread(ServerToClientBrokerRequest::handle)
                 .add();
 
-        net.messageBuilder(ClientDataManagerMessageToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ClientDataManagerMessageToClient::new)
-                .encoder(ClientDataManagerMessageToClient::toBytes)
-                .consumerMainThread(ClientDataManagerMessageToClient::handle)
+        net.messageBuilder(ServerToClientBrokerResponse.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(ServerToClientBrokerResponse::new)
+                .encoder(ServerToClientBrokerResponse::toBytes)
+                .consumerMainThread(ServerToClientBrokerResponse::handle)
                 .add();
 
         // Register all our packets. We only have one right now. The new message has a unique ID, an indication
@@ -55,6 +55,12 @@ public class Messages {
                 .decoder(AddNpcToPlayerTeam::new)
                 .encoder(AddNpcToPlayerTeam::toBytes)
                 .consumerMainThread(AddNpcToPlayerTeam::handle)
+                .add();
+
+        net.messageBuilder(SetNpcTeamData.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(SetNpcTeamData::new)
+                .encoder(SetNpcTeamData::toBytes)
+                .consumerMainThread(SetNpcTeamData::handle)
                 .add();
 
         net.messageBuilder(ToggleTrackingNpc.class, id(), NetworkDirection.PLAY_TO_SERVER)
@@ -69,34 +75,17 @@ public class Messages {
                 .consumerMainThread(OpenEncyclopedia::handle)
                 .add();
 
-        net.messageBuilder(GetNpcData.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .decoder(GetNpcData::new)
-                .encoder(GetNpcData::toBytes)
-                .consumerMainThread(GetNpcData::handle)
+        net.messageBuilder(OpenEditTeam.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(OpenEditTeam::new)
+                .encoder(OpenEditTeam::toBytes)
+                .consumerMainThread(OpenEditTeam::handle)
                 .add();
-
-        net.messageBuilder(GetTeamData.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .decoder(GetTeamData::new)
-                .encoder(GetTeamData::toBytes)
-                .consumerMainThread(GetTeamData::handle)
-                .add();
+        
 
         net.messageBuilder(SyncTrackingToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(SyncTrackingToClient::new)
                 .encoder(SyncTrackingToClient::toBytes)
                 .consumerMainThread(SyncTrackingToClient::handle)
-                .add();
-
-        net.messageBuilder(SyncNpcDataToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(SyncNpcDataToClient::new)
-                .encoder(SyncNpcDataToClient::toBytes)
-                .consumerMainThread(SyncNpcDataToClient::handle)
-                .add();
-
-        net.messageBuilder(SyncTeamDataToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(SyncTeamDataToClient::new)
-                .encoder(SyncTeamDataToClient::toBytes)
-                .consumerMainThread(SyncTeamDataToClient::handle)
                 .add();
     }
 

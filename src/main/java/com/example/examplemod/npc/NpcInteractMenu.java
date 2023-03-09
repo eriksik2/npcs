@@ -1,5 +1,6 @@
 package com.example.examplemod.npc;
 
+import com.example.examplemod.networking.NpcDataServerToClientBroker;
 import com.example.examplemod.setup.Registration;
 
 import ca.weblite.objc.Client;
@@ -23,6 +24,7 @@ public class NpcInteractMenu extends AbstractContainerMenu {
 
     public DataSlot nidSlot;
     public DataSlot eidSlot;
+    private NpcDataServerToClientBroker npcDataBroker = Registration.NPC_DATA_BROKER.get();
 
     // Server constructor
     public NpcInteractMenu(int windowId, BlockPos pos, Inventory playerInventory, Player player, NpcEntity npcEntity) {
@@ -61,7 +63,7 @@ public class NpcInteractMenu extends AbstractContainerMenu {
 
     public NpcData getNpcData() {
         if(!player.level.isClientSide) throw new RuntimeException("Cannot get client data on server");
-        return ClientNpcData.get(nidSlot.get());
+        return npcDataBroker.get(nidSlot.get());
     }
 
     public int getNpcId(){

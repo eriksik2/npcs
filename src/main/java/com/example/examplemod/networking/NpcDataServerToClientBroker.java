@@ -1,20 +1,19 @@
 package com.example.examplemod.networking;
 
-import com.example.examplemod.ExampleMod;
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcManager;
 import com.example.examplemod.setup.Registration;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent.Context;
 
-public class NpcClientDataManager extends ClientDataManager<NpcData> {
+public class NpcDataServerToClientBroker extends ServerToClientBroker<NpcData> {
 
-    public static final NpcClientDataManager instance = new NpcClientDataManager();
+    // This instance is registered in the Registration class
+    public static final NpcDataServerToClientBroker instance = new NpcDataServerToClientBroker();
 
-    private NpcClientDataManager() {
+    private NpcDataServerToClientBroker() {
         super(Registration.NPC_DATA_BROKER.getId());
     }
 
@@ -23,6 +22,11 @@ public class NpcClientDataManager extends ClientDataManager<NpcData> {
         ServerPlayer player = ctx.getSender();
         NpcManager manager = NpcManager.get(player.level);
         return manager.getNpcData(slot);
+    }
+
+    @Override
+    public int hashCode(NpcData data) {
+        return data.hashCode();
     }
 
     @Override

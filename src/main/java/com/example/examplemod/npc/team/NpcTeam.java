@@ -1,10 +1,11 @@
-package com.example.examplemod.npc;
+package com.example.examplemod.npc.team;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.examplemod.npc.NpcManager;
 import com.example.examplemod.npc.role.NpcRole;
 
 import net.minecraft.nbt.CompoundTag;
@@ -88,11 +89,16 @@ public class NpcTeam {
         buf.writeNbt(toCompoundTag());
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode() ^ owners.hashCode() ^ npcMembers.hashCode() ^ roles.hashCode();
+    }
+
     public void setDirty() {
         manager.setDirty();
     }
 
-    Integer getId() {
+    public Integer getId() {
         return id;
     }
 

@@ -4,11 +4,10 @@ import java.util.HashMap;
 
 import javax.annotation.Nonnull;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Position;
+import com.example.examplemod.npc.team.NpcTeam;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket.Pos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.player.Player;
