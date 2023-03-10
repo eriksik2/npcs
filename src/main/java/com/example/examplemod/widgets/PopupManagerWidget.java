@@ -30,8 +30,19 @@ class PopupWidget extends ModWidget {
         }
     }
 
+    @Override
+    public boolean mousePressed(double mouseX, double mouseY, int button) {
+        if(!getActive()) return false;
+        if(!children.get(0).isMouseOver(mouseX, mouseY)) {
+            close();
+            return false;
+        }
+        return super.mousePressed(mouseX, mouseY, button);
+    }
+
     public void close() {
         manager.popups.remove(this);
+        deinit();
     }
 }
 
