@@ -1,13 +1,22 @@
 package com.example.examplemod.npc.team;
 
+import com.example.examplemod.networking.AddRoleToTeam;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.SetNpcTeamData;
+import com.example.examplemod.npc.role.NpcRole;
 import com.example.examplemod.setup.Registration;
+import com.example.examplemod.widgets.ModWidget;
+import com.example.examplemod.widgets.PopupManagerWidget;
+import com.example.examplemod.widgets.RoleWidget;
+import com.example.examplemod.widgets.ScrollableListWidget;
+import com.example.examplemod.widgets.TabsWidget;
+import com.example.examplemod.widgets.TextWidget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 
+import ca.weblite.objc.Message;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -22,6 +31,9 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     private CenteredStringWidget titleWidget;
     private EditBox nameInput;
     private Button saveButton;
+    private TabsWidget tabs;
+    private ScrollableListWidget rolesList;
+    private PopupManagerWidget popupManager;
 
     private NpcTeamServerToClientBroker teamBroker = Registration.NPC_TEAM_BROKER.get();
     private NpcTeam team;
@@ -39,47 +51,103 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     protected void init() {
         super.init();
 
-        titleWidget = new CenteredStringWidget(Component.literal(""), this.font);
-        titleWidget.setPosition(leftPos, topPos);
-        titleWidget.setWidth(this.imageWidth);
-        addRenderableWidget(titleWidget);
+        popupManager = new PopupManagerWidget(null);
+        tabs = new TabsWidget(popupManager);
+        tabs.setWidth(width);
+        tabs.setHeight(height);
+        tabs.addTab(Component.literal("Team"), new ModWidget(tabs) {
+            public void onInit() {
+                this.layoutFillRemaining();
+                this.setPadding(10);
 
+                titleWidget = new CenteredStringWidget(Component.literal(""), font);
+                titleWidget.setPosition(0, 0);
+                titleWidget.setWidth(getInnerWidth());
+                titleWidget.setHeight(20);
+                addChild(titleWidget);
 
-        nameInput = new EditBox(this.font, leftPos, topPos + 30, 100, 20, Component.nullToEmpty("Name"));
-        addRenderableWidget(nameInput);
+                TextWidget nameText = new TextWidget(this, "Name");
+                nameText.setPosition(0, 30);
+                nameText.setWidth(getInnerWidth()/2);
 
-        this.saveButton = Button.builder(Component.literal("Save"), (button) -> {
-            if(team == null) return;
-            Messages.sendToServer(new SetNpcTeamData(team.getId(), nameInput.getValue()));
-        }).build();
-        saveButton.setPosition(leftPos, topPos + 60);
-        saveButton.setWidth(100);
-        addRenderableWidget(saveButton);
+                nameInput = new EditBox(font, 0, 0, 0, 0, Component.nullToEmpty("Name"));
+                nameInput.setPosition(getInnerWidth()/2, 30);
+                nameInput.setWidth(getInnerWidth()/2);
+                nameInput.setHeight(20);
+                addChild(nameInput);
+
+                saveButton = Button.builder(Component.literal("Save"), (button) -> {
+                    if(team == null) return;
+                    Messages.sendToServer(new SetNpcTeamData(team.getId(), nameInput.getValue()));
+                }).build();
+                saveButton.setPosition(0, 60);
+                saveButton.setWidth(getInnerWidth()/3);
+                saveButton.setHeight(20);
+                addChild(saveButton).layoutCenterX();
+            }
+        });
+        tabs.addTab(Component.literal("Roles"), new ModWidget(tabs) {
+            public void onInit() {
+                this.layoutFillRemaining();
+                rolesList = new ScrollableListWidget(this);
+                rolesList.layoutFillRemaining();
+                rolesList.setGap(5);
+                rolesList.setHeight(rolesList.getHeight() - 20);
+
+                Button bb = Button.builder(Component.literal("Add role"), (button) -> {
+                    if(team == null) return;
+                    Messages.sendToServer(new AddRoleToTeam(team.getId(), "New role", "New role"));
+                }).build();
+                ModWidget addRoleButton = this.addChild(bb);
+
+                addRoleButton.setWidth(100);
+                addRoleButton.layoutCenterX();
+                addRoleButton.setHeight(20);
+                addRoleButton.setY(this.getInnerHeight() - 20);
+            }
+        });
+        popupManager.init();
     }
 
     private void onNewTeam() {
         if(team == null) return;
-        nameInput.setValue(team.getName());
-        titleWidget.setMessage(Component.literal("Team Edit:" + team.getName()));
+        if(rolesList != null) {
+            rolesList.clearChildren();
+            for(NpcRole role : team.getRoles()) {
+                new RoleWidget(rolesList, role);
+            }
+        }
+        if(nameInput != null) nameInput.setValue(team.getName());
+        if(titleWidget != null) titleWidget.setMessage(Component.literal("Editing team: " + team.getName()));
     }
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         NpcTeam newTeam = teamBroker.get(menu.getTeamId());
-        if (newTeam != team) {
+        int hc1 = team == null ? 0 : team.hashCode();
+        int hc2 = newTeam == null ? 0 : newTeam.hashCode();
+        if (hc1 != hc2) {
             team = newTeam;
             onNewTeam();
         }
+
         this.renderBackground(stack);
+        popupManager.render(stack, mouseX, mouseY, partialTicks);
         super.render(stack, mouseX, mouseY, partialTicks);
         RenderSystem.disableBlend();
         this.renderFg(stack, mouseX, mouseY, partialTicks);
         this.renderTooltip(stack, mouseX, mouseY);
     }
 
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        popupManager.onClick(mouseX, mouseY);
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
     protected void renderFg(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        nameInput.render(stack, mouseX, mouseY, partialTicks);
-        saveButton.render(stack, mouseX, mouseY, partialTicks);
+        //nameInput.render(stack, mouseX, mouseY, partialTicks);
+        //saveButton.render(stack, mouseX, mouseY, partialTicks);
     }
 
     @Override

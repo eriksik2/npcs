@@ -6,9 +6,10 @@ import java.util.List;
 import com.example.examplemod.npc.team.NpcTeam;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class NpcRole {
-    private NpcTeam manager;
+    public NpcTeam manager;
     private Integer id;
     private String name;
     private String description;
@@ -44,6 +45,14 @@ public class NpcRole {
         data.putIntArray("npcMembers", npcMembers);
         
         return data;
+    }
+
+    public NpcRole(FriendlyByteBuf buf, NpcTeam manager) {
+        this(buf.readNbt(), manager);
+    }
+
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeNbt(toCompoundTag());
     }
 
     public Integer getId() {

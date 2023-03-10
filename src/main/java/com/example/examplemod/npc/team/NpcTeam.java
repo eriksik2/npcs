@@ -81,8 +81,8 @@ public class NpcTeam {
         return data;
     }
 
-    public NpcTeam(FriendlyByteBuf buf) {
-        this(buf.readNbt(), null);
+    public NpcTeam(FriendlyByteBuf buf, NpcManager manager) {
+        this(buf.readNbt(), manager);
     }
 
     public void toBytes(FriendlyByteBuf buf) {

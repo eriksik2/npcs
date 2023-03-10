@@ -37,7 +37,7 @@ public class NpcTeamServerToClientBroker extends ServerToClientBroker<NpcTeam> {
 
     @Override
     public NpcTeam fromBytes(FriendlyByteBuf buf) {
-        return new NpcTeam(buf);
+        return new NpcTeam(buf, null);
     }
     
 }

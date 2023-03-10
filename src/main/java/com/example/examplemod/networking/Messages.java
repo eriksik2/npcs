@@ -63,6 +63,12 @@ public class Messages {
                 .consumerMainThread(SetNpcTeamData::handle)
                 .add();
 
+        net.messageBuilder(AddRoleToTeam.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(AddRoleToTeam::new)
+                .encoder(AddRoleToTeam::toBytes)
+                .consumerMainThread(AddRoleToTeam::handle)
+                .add();
+
         net.messageBuilder(ToggleTrackingNpc.class, id(), NetworkDirection.PLAY_TO_SERVER)
                 .decoder(ToggleTrackingNpc::new)
                 .encoder(ToggleTrackingNpc::toBytes)
