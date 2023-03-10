@@ -43,12 +43,21 @@ public class PopupManagerWidget extends ModWidget {
         super(parent);
     }
 
+    @Override
+    protected void registerDebugProperties() {
+        registerDebugChildList("popups", () -> popups);
+    }
+
     public PopupWidget push(ModWidget popup) {
         PopupWidget popupWidget = new PopupWidget(null, this);
         popupWidget.addChild(popup);
         popups.add(popupWidget);
         setLayoutDirty();
         return popupWidget;
+    }
+
+    @Override
+    public void onRelayoutPre() {
     }
 
     @Override

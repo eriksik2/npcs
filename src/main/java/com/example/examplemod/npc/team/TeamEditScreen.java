@@ -55,6 +55,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
         super.init();
 
         popupManager = new PopupManagerWidget(null);
+        popupManager.setSize(width, height);
         tabs = new TabsWidget(popupManager);
         tabs.setWidth(width);
         tabs.setHeight(height);

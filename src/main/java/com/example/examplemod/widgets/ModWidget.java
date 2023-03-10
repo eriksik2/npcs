@@ -1,11 +1,11 @@
 package com.example.examplemod.widgets;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
@@ -19,13 +19,23 @@ class DebugPropertyEntry<T> {
     }
 }
 
+class DebugChildrenEntry<T extends ModWidget> {
+    public String name;
+    public Supplier<List<T>> supplier;
+    public DebugChildrenEntry(String name, Supplier<List<T>> supplier) {
+        this.name = name;
+        this.supplier = supplier;
+    }
+}
+
 public class ModWidget extends GuiComponent implements Renderable {
 
+    // Internal state management
     private boolean isInitialized = false;
     protected boolean layoutDirty = true;
 
+    // Layouting properties
     private ArrayList<Runnable> layoutListeners = new ArrayList<Runnable>();
-
     private int globalX = 0;
     private int globalY = 0;
     private int localX = 0;
@@ -36,6 +46,11 @@ public class ModWidget extends GuiComponent implements Renderable {
     protected ModWidget parent;
     protected ArrayList<ModWidget> children = new ArrayList<ModWidget>();
     private int padding = 0;
+
+    // debugging properties
+    private ArrayList<DebugPropertyEntry<?>> debugProperties = new ArrayList<DebugPropertyEntry<?>>();
+    private ArrayList<DebugChildrenEntry<?>> debugChildren = new ArrayList<DebugChildrenEntry<?>>();
+
 
     public ModWidget(ModWidget parent) {
         if(parent != null) parent.addChild(this);
@@ -50,9 +65,11 @@ public class ModWidget extends GuiComponent implements Renderable {
     protected void registerDebugProperties() {
     }
 
-    private ArrayList<DebugPropertyEntry<?>> debugProperties = new ArrayList<DebugPropertyEntry<?>>();
     public <T> void registerDebugProperty(String name, Supplier<T> supplier) {
         debugProperties.add(new DebugPropertyEntry<T>(name, supplier));
+    }
+    public <T extends ModWidget> void registerDebugChildList(String name, Supplier<List<T>> supplier) {
+        debugChildren.add(new DebugChildrenEntry<T>(name, supplier));
     }
     public String getDebugName() {
         String name = getClass().getSimpleName();
@@ -108,6 +125,12 @@ public class ModWidget extends GuiComponent implements Renderable {
         result += indentString + ")\n";
         for (ModWidget child : children) {
             result += child.getDebugString(indent + 1);
+        }
+        for(DebugChildrenEntry<?> entry : debugChildren) {
+            result += indentString + "<<" + entry.name + ">>\n";
+            for (ModWidget child : entry.supplier.get()) {
+                result += child.getDebugString(indent + 1);
+            }
         }
         return result;
     }
@@ -168,7 +191,7 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     public void layoutCenterY() {
         if(parent == null) return;
-        setX((parent.getInnerWidth() - getWidth()) / 2);
+        setY((parent.getInnerHeight() - getHeight()) / 2);
     }
 
     public boolean isMouseOver(double mouseX, double mouseY) {

@@ -23,7 +23,7 @@ public class AbstractWidgetWrapper extends ModWidget {
 
     @Override
     protected void registerDebugProperties() {
-        registerDebugProperty("message", () -> wrappedWidget.getMessage());
+        registerDebugProperty("message", () -> "\"" + wrappedWidget.getMessage().getString() + "\"");
     }
 
     @Override
