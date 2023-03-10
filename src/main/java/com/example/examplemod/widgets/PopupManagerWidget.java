@@ -11,6 +11,23 @@ class PopupWidget extends ModWidget {
     public PopupWidget(ModWidget parent, PopupManagerWidget manager) {
         super(parent);
         this.manager = manager;
+        this.parent = manager;
+    }
+
+    @Override
+    public void onRelayoutPre() {
+        setX(0);
+        setY(0);
+        setWidth(manager.getInnerWidth());
+        setHeight(manager.getInnerHeight());
+    }
+
+    @Override
+    public void onRelayoutPost() {
+        for (ModWidget child : children) {
+            child.layoutCenterX();
+            child.layoutCenterY();
+        }
     }
 
     public void close() {
@@ -26,20 +43,19 @@ public class PopupManagerWidget extends ModWidget {
         super(parent);
     }
 
-    @Override
-    public void onRelayoutPost() {
-        for (PopupWidget popup : popups) {
-            popup.setX((getInnerWidth() - popup.getWidth()) / 2);
-            popup.setY((getInnerHeight() - popup.getHeight()) / 2);
-        }
-    }
-
     public PopupWidget push(ModWidget popup) {
         PopupWidget popupWidget = new PopupWidget(null, this);
         popupWidget.addChild(popup);
         popups.add(popupWidget);
         setLayoutDirty();
         return popupWidget;
+    }
+
+    @Override
+    public void onRelayoutPost() {
+        for (PopupWidget popup : popups) {
+            popup.relayout();
+        }
     }
 
     public void pop() {
@@ -55,29 +71,29 @@ public class PopupManagerWidget extends ModWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    public boolean mousePressed(double mouseX, double mouseY, int button) {
         if(popups.size() == 0) {
-            super.onClick(mouseX, mouseY);
+            return super.mousePressed(mouseX, mouseY, button);
         } else {
-            popups.get(popups.size() - 1).onClick(mouseX, mouseY);
+            return popups.get(popups.size() - 1).mousePressed(mouseX, mouseY, button);
         }
     }
     
     @Override
-    public void onRelease(double mouseX, double mouseY) {
+    public void mouseReleased(double mouseX, double mouseY) {
         if(popups.size() == 0) {
-            super.onRelease(mouseX, mouseY);
+            super.mouseReleased(mouseX, mouseY);
         } else {
-            popups.get(popups.size() - 1).onRelease(mouseX, mouseY);
+            popups.get(popups.size() - 1).mouseReleased(mouseX, mouseY);
         }
     }
 
     @Override
-    public void onScroll(double mouseX, double mouseY, double amount) {
+    public void mouseScrolled(double mouseX, double mouseY, double amount) {
         if(popups.size() == 0) {
-            super.onScroll(mouseX, mouseY, amount);
+            super.mouseScrolled(mouseX, mouseY, amount);
         } else {
-            popups.get(popups.size() - 1).onScroll(mouseX, mouseY, amount);
+            popups.get(popups.size() - 1).mouseScrolled(mouseX, mouseY, amount);
         }
     }
     

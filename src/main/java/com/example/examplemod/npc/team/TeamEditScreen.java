@@ -34,6 +34,9 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     private TabsWidget tabs;
     private ScrollableListWidget rolesList;
     private PopupManagerWidget popupManager;
+    private boolean showDebug = false;
+
+    private ModWidget debug;
 
     private NpcTeamServerToClientBroker teamBroker = Registration.NPC_TEAM_BROKER.get();
     private NpcTeam team;
@@ -114,7 +117,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
         if(rolesList != null) {
             rolesList.clearChildren();
             for(NpcRole role : team.getRoles()) {
-                new RoleWidget(rolesList, role);
+                new RoleWidget(rolesList, popupManager, role);
             }
         }
         if(nameInput != null) nameInput.setValue(team.getName());
@@ -134,6 +137,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
         this.renderBackground(stack);
         popupManager.render(stack, mouseX, mouseY, partialTicks);
         super.render(stack, mouseX, mouseY, partialTicks);
+        if(debug != null) debug.render(stack, mouseX, mouseY, partialTicks);
         RenderSystem.disableBlend();
         this.renderFg(stack, mouseX, mouseY, partialTicks);
         this.renderTooltip(stack, mouseX, mouseY);
@@ -141,8 +145,29 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        popupManager.onClick(mouseX, mouseY);
+        if(button == 1) {
+            showDebug = !showDebug;
+            if(showDebug) {
+                debug = popupManager.debugWidget();
+                popupManager.setPosition(width/2, 0);
+                debug.setSize(width/2, height);
+            } else {
+                debug = null;
+                popupManager.setPosition(0, 0);
+                popupManager.setSize(width, height);
+            }
+            return true;
+        }
+        if(debug != null && debug.mousePressed(mouseX, mouseY, button)) return true;
+        if(popupManager.mousePressed(mouseX, mouseY, button)) return true;
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if(debug != null) debug.mouseScrolled(mouseX, mouseY, amount);
+        popupManager.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     protected void renderFg(PoseStack stack, int mouseX, int mouseY, float partialTicks) {

@@ -11,10 +11,13 @@ public class RoleWidget extends ModWidget {
     private Font font;
     public NpcRole role;
 
-    public RoleWidget(ModWidget parent, NpcRole role) {
+    private PopupManagerWidget popupManager;
+
+    public RoleWidget(ModWidget parent, PopupManagerWidget popupManager, NpcRole role) {
         super(parent);
         this.font = Minecraft.getInstance().font;
         this.role = role;
+        this.popupManager = popupManager;
         setHeight(font.lineHeight);
     }
 
@@ -30,8 +33,22 @@ public class RoleWidget extends ModWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
-        // TODO
+    public boolean onMousePressed(double mouseX, double mouseY, int button) {
+        if(!isMouseOver(mouseX, mouseY)) return false;
+        popupManager.push(new ModWidget(this) {
+            @Override
+            public void onInit() {
+                super.onInit();
+
+                new TextWidget(this, "Hello world!");
+            }
+
+            @Override
+            public void onRelayoutPost() {
+                this.layoutShrinkwrapChildren();
+            }
+        });
+        return false;
     }
     
 }

@@ -16,40 +16,39 @@ public class AbstractWidgetWrapper extends ModWidget {
         this.wrappedWidget = wrappedWidget;
         this.setX(wrappedWidget.getX());
         this.setY(wrappedWidget.getY());
-        this.wrappedWidget.setX(0);
-        this.wrappedWidget.setY(0);
+        this.wrappedWidget.setX(getGlobalX());
+        this.wrappedWidget.setY(getGlobalY());
         this.setWidth(wrappedWidget.getWidth());
         this.setHeight(wrappedWidget.getHeight());
     }
 
     @Override
-    public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        mouseX -= getGlobalX();
-        mouseY -= getGlobalY();
-        wrappedWidget.render(stack, mouseX, mouseY, partialTicks);
+    public void onRelayoutPost() {
+        this.wrappedWidget.setX(getGlobalX());
+        this.wrappedWidget.setY(getGlobalY());
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
-        mouseX -= getGlobalX();
-        mouseY -= getGlobalY();
-        wrappedWidget.onClick(mouseX, mouseY);
+    public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        stack.pushPose();
+        stack.translate(-getGlobalX(), -getGlobalY(), 0);
+        wrappedWidget.render(stack, mouseX, mouseY, partialTicks);
+        stack.popPose();
+    }
+
+    @Override
+    public boolean onMousePressed(double mouseX, double mouseY, int button) {
+        return wrappedWidget.mouseClicked(mouseX, mouseY, button);
     }
  
     @Override
-    public void onRelease(double mouseX, double mouseY) {
-        mouseX -= getGlobalX();
-        mouseY -= getGlobalY();
+    public void onMouseReleased(double mouseX, double mouseY) {
         wrappedWidget.onRelease(mouseX, mouseY);
     }
 
-    public void onScroll(double mouseX, double mouseY, double amount) {
-        //wrappedWidget.onScroll(mouseX, mouseY, amount);
-    }
-    
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
-        wrappedWidget.updateNarration(p_259858_);
+    public void onMouseScrolled(double mouseX, double mouseY, double amount) {
+        //wrappedWidget.onScroll(mouseX, mouseY, amount);
     }
 
     @Override

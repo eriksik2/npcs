@@ -4,21 +4,58 @@ import java.util.ArrayList;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.components.Renderable;
 
-public class ModWidget extends AbstractWidget {
+public class ModWidget extends GuiComponent implements Renderable {
 
     private boolean isInitialized = false;
-    protected boolean layoutDirty = false;
+    protected boolean layoutDirty = true;
+
+    private int globalX = 0;
+    private int globalY = 0;
+    private int localX = 0;
+    private int localY = 0;
+    private int width = 0;
+    private int height = 0;
+    private boolean active = true;
     protected ModWidget parent;
     protected ArrayList<ModWidget> children = new ArrayList<ModWidget>();
     private int padding = 0;
 
     public ModWidget(ModWidget parent) {
-        super(0, 0, 0, 0, Component.empty());
         if(parent != null) parent.addChild(this);
+    }
+
+    public String toDebugString() {
+        return toDebugString(0);
+    }
+    public String toDebugString(int indent) {
+        String indentString = "";
+        for (int i = 0; i < indent; i++) indentString += "  ";
+        String result = indentString + this.getClass().getSimpleName() + "(\n";
+        result += indentString + "  global: " + globalX + ", " + globalY + "\n";
+        result += indentString + "  local:  " + localX + ", " + localY + "\n";
+        result += indentString + "  size:   " + width + ", " + height + "\n";
+        result += indentString + "  padding: " + padding + "\n";
+        result += indentString + ")\n";
+        for (ModWidget child : children) {
+            result += child.toDebugString(indent + 1);
+        }
+        return result;
+    }
+
+    public ModWidget debugWidget() {
+        String debugString = toDebugString();
+        String[] lines = debugString.split("\n");
+        ScrollableListWidget root = new ScrollableListWidget(null);
+        for(String line : lines) {
+            TextWidget text = new TextWidget(root, line);
+            root.addChild(text);
+        }
+        root.layoutShrinkwrapChildren();
+        return root;
     }
 
     public static AbstractWidgetWrapper of(ModWidget parent, AbstractWidget widget) {
@@ -37,6 +74,7 @@ public class ModWidget extends AbstractWidget {
     public void onInit() {}
 
     public final void relayout() {
+        init();
         onRelayoutPre();
         for (ModWidget child : children) {
             child.relayout();
@@ -54,6 +92,17 @@ public class ModWidget extends AbstractWidget {
         setHeight(parent.getInnerHeight() - getY());
     }
 
+    public void layoutShrinkwrapChildren() {
+        int width = 0;
+        int height = 0;
+        for (ModWidget child : children) {
+            width = Math.max(width, child.getX() + child.getWidth());
+            height = Math.max(height, child.getY() + child.getHeight());
+        }
+        setWidth(width);
+        setHeight(height);
+    }
+
     public void layoutCenterX() {
         if(parent == null) return;
         setX((parent.getInnerWidth() - getWidth()) / 2);
@@ -64,27 +113,10 @@ public class ModWidget extends AbstractWidget {
         setX((parent.getInnerWidth() - getWidth()) / 2);
     }
 
-    @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         int x = getGlobalX();
         int y = getGlobalY();
         return mouseX >= x && mouseX <= x + getWidth() && mouseY >= y && mouseY <= y + getHeight();
-    }
-
-    public int getInnerX() {
-        return getX() + padding;
-    }
-
-    public int getInnerY() {
-        return getY() + padding;
-    }
-
-    public int getInnerWidth() {
-        return getWidth() - padding * 2;
-    }
-
-    public int getInnerHeight() {
-        return getHeight() - padding * 2;
     }
 
     @Override
@@ -96,7 +128,7 @@ public class ModWidget extends AbstractWidget {
             relayout();
         }
         stack.pushPose();
-        stack.translate(getInnerX(), getInnerY(), 0);
+        stack.translate(getX() + getInnerX(), getY() + getInnerY(), 0);
         onRender(stack, mouseX, mouseY, partialTicks);
         for (ModWidget child : children) {
             child.render(stack, mouseX, mouseY, partialTicks);
@@ -107,63 +139,85 @@ public class ModWidget extends AbstractWidget {
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {}
 
     public <T extends ModWidget> T addChild(T child) {
+        if(child.parent != null) child.parent.children.remove(child);
         child.parent = this;
         children.add(child);
         return child;
     }
 
     public <T extends AbstractWidget> AbstractWidgetWrapper addChild(T child) {
-        AbstractWidgetWrapper child1 = new AbstractWidgetWrapper(this, child);
-        children.add(child1);
-        return child1;
+        return new AbstractWidgetWrapper(this, child);
     }
 
     public void clearChildren() {
         children.clear();
     }
 
-    @Override
-    public void onClick(double mouseX, double mouseY) {
+    public boolean mousePressed(double mouseX, double mouseY, int button) {
         for (ModWidget child : children) {
-            if(!child.isMouseOver(mouseX, mouseY)) continue;
-            child.onClick(mouseX, mouseY);
+            if(child.mousePressed(mouseX, mouseY, button)) return true;
         }
+        return onMousePressed(mouseX, mouseY, button);
     }
  
-    @Override
-    public void onRelease(double mouseX, double mouseY) {
+    public void mouseReleased(double mouseX, double mouseY) {
+        onMouseReleased(mouseX, mouseY);
         for (ModWidget child : children) {
-            if(!child.isMouseOver(mouseX, mouseY)) continue;
-            child.onRelease(mouseX, mouseY);
+            child.mouseReleased(mouseX, mouseY);
         }
     }
 
-    public void onScroll(double mouseX, double mouseY, double amount) {
+    public void mouseScrolled(double mouseX, double mouseY, double amount) {
+        onMouseScrolled(mouseX, mouseY, amount);
         for (ModWidget child : children) {
-            if(!child.isMouseOver(mouseX, mouseY)) continue;
-            child.onScroll(mouseX, mouseY, amount);
+            child.mouseScrolled(mouseX, mouseY, amount);
         }
     }
-    
-    @Override
-    protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
-        throw new UnsupportedOperationException("ModWidget does not support narration");
-    }
 
-    public int getGlobalX() {
-        if(parent == null) return getX();
-        return getX() + parent.getGlobalX();
-    }
-
-    public int getGlobalY() {
-        if(parent == null) return getY();
-        return getY() + parent.getGlobalY();
-    }
+    public boolean onMousePressed(double mouseX, double mouseY, int button) { return false; }
+    public void onMouseReleased(double mouseX, double mouseY) {}
+    public void onMouseScrolled(double mouseX, double mouseY, double amount) {}
 
     public void tick() {
+        onTick();
         for (ModWidget child : children) {
             child.tick();
         }
+    }
+
+    public void onTick() {}
+
+    public void setActive(boolean active) {
+        this.active = active;
+        parent.setLayoutDirty();
+    }
+
+    public boolean getActive() {
+        return active;
+    }
+
+    public int getInnerX() {
+        return padding;
+    }
+
+    public int getInnerY() {
+        return padding;
+    }
+
+    public int getInnerWidth() {
+        return getWidth() - padding * 2;
+    }
+
+    public int getInnerHeight() {
+        return getHeight() - padding * 2;
+    }
+
+    public int getGlobalX() {
+        return this.globalX;
+    }
+
+    public int getGlobalY() {
+        return this.globalY;
     }
 
     public int getPadding() {
@@ -171,38 +225,71 @@ public class ModWidget extends AbstractWidget {
     }
 
     public void setPadding(int padding) {
-        setLayoutDirty();
         this.padding = padding;
+        setLayoutDirty();
     }
 
-    @Override
     public void setWidth(int width) {
-        super.setWidth(width);
+        this.width = width;
         setLayoutDirty();
     }
 
-    @Override
     public void setHeight(int height) {
-        super.setHeight(height);
+        this.height = height;
         setLayoutDirty();
     }
 
-    @Override
     public void setX(int x) {
-        super.setX(x);
+        this.localX = x;
+        refreshGlobalPosition();
         setLayoutDirty();
     }
 
-    @Override
     public void setY(int y) {
-        super.setY(y);
+        this.localY = y;
+        refreshGlobalPosition();
         setLayoutDirty();
     }
 
-    @Override
+    private void refreshGlobalPosition() {
+        if(parent == null) {
+            globalX = localX;
+            globalY = localY;
+        } else {
+            this.globalX = parent.getGlobalX() + parent.getInnerX() + getX();
+            this.globalY = parent.getGlobalY() + parent.getInnerY() + getY();
+        }
+        for(ModWidget child : children) {
+            child.refreshGlobalPosition();
+        }
+    }
+
+    public int getX() {
+        return localX;
+    }
+
+    public int getY() {
+        return localY;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     public void setPosition(int x, int y) {
-        super.setX(x);
-        super.setY(y);
+        this.localX = x;
+        this.localY = y;
+        refreshGlobalPosition();
+        setLayoutDirty();
+    }
+
+    public void setSize(int width, int height) {
+        this.width = width;
+        this.height = height;
         setLayoutDirty();
     }
 

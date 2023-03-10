@@ -6,9 +6,23 @@ public class ScrollableListWidget extends ModWidget {
 
     private int childrenHeight = 0;
     private int gap = 0;
+    private float scroll = 0;
+    private float scrollSpeed = 8.0f;
 
     public ScrollableListWidget(ModWidget parent) {
         super(parent);
+    }
+
+    @Override
+    public void onMouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!isMouseOver(mouseX, mouseY)) return;
+        scroll += amount*scrollSpeed;
+        super.onMouseScrolled(mouseX, mouseY, amount);
+    }
+
+    @Override
+    public int getInnerY() {
+        return super.getInnerY() + (int)scroll;
     }
 
     @Override

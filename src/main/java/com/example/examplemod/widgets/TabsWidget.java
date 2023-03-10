@@ -28,8 +28,6 @@ public class TabsWidget extends ModWidget {
         tabName.add(name);
         tabs.add(tab);
         setLayoutDirty();
-
-        
     }
 
     @Override
@@ -78,20 +76,20 @@ public class TabsWidget extends ModWidget {
     }
  
     @Override
-    public void onClick(double mouseX, double mouseY) {
-        if(tabs.size() == 0) return;
+    public boolean onMousePressed(double mouseX, double mouseY, int button) {
+        if(tabs.size() == 0) return false;
         for(Button tabButton : tabButtons) {
             if(mouseX >= tabButton.getX() && mouseX <= tabButton.getX() + tabButton.getWidth()
             && mouseY >= tabButton.getY() && mouseY <= tabButton.getY() + tabButton.getHeight()) {
-                tabButton.onClick(mouseX, mouseY);
+                if(tabButton.mouseClicked(mouseX, mouseY, button)) return true;
             }
         }
         ModWidget tab = tabs.get(selectedTab);
-        tab.onClick(mouseX, mouseY);
+        return tab.mousePressed(mouseX, mouseY, button);
     }
  
     @Override
-    public void onRelease(double mouseX, double mouseY) {
+    public void onMouseReleased(double mouseX, double mouseY) {
         if(tabs.size() == 0) return;
         for(Button tabButton : tabButtons) {
             if(mouseX >= tabButton.getX() && mouseX <= tabButton.getX() + tabButton.getWidth()
@@ -100,14 +98,14 @@ public class TabsWidget extends ModWidget {
             }
         }
         ModWidget tab = tabs.get(selectedTab);
-        tab.onRelease(mouseX, mouseY);
+        tab.mouseReleased(mouseX, mouseY);
     }
 
     @Override
-    public void onScroll(double mouseX, double mouseY, double amount) {
+    public void onMouseScrolled(double mouseX, double mouseY, double amount) {
         if(tabs.size() == 0) return;
         ModWidget tab = tabs.get(selectedTab);
-        tab.onScroll(mouseX, mouseY, amount);
+        tab.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
