@@ -126,10 +126,6 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        if(debug != null) {
-            debug = popupManager.debugWidget();
-            debug.setSize(width/2, height);
-        }
         NpcTeam newTeam = teamBroker.get(menu.getTeamId());
         int hc1 = team == null ? 0 : team.hashCode();
         int hc2 = newTeam == null ? 0 : newTeam.hashCode();

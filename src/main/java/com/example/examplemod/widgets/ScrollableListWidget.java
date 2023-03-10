@@ -63,7 +63,7 @@ public class ScrollableListWidget extends ModWidget {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        enableScissor(getX(), getY(), getWidth(), getHeight());
+        enableScissor(getGlobalX(), getGlobalY(), getInnerWidth(), getInnerHeight());
         super.render(stack, mouseX, mouseY, partialTicks);
         disableScissor();
     }

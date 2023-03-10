@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
@@ -22,6 +23,8 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     private boolean isInitialized = false;
     protected boolean layoutDirty = true;
+
+    private ArrayList<Runnable> layoutListeners = new ArrayList<Runnable>();
 
     private int globalX = 0;
     private int globalY = 0;
@@ -60,6 +63,35 @@ public class ModWidget extends GuiComponent implements Renderable {
         return name;
     }
 
+    public void deinit() {
+        for (ModWidget child : children) {
+            child.deinit();
+        }
+        children.clear();
+        layoutListeners.clear();
+        isInitialized = false;
+        onDeinit();
+    }
+
+    public void onDeinit() {
+    }
+
+    public void addListener(ModWidget listener) {
+        addListener(listener::relayout);
+    }
+
+    public void removeListener(ModWidget listener) {
+        removeListener(listener::relayout);
+    }
+
+    public void addListener(Runnable listener) {
+        layoutListeners.add(listener);
+    }
+
+    public void removeListener(Runnable listener) {
+        layoutListeners.remove(listener);
+    }
+
     public String getDebugString() {
         return getDebugString(0);
     }
@@ -81,15 +113,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public ModWidget debugWidget() {
-        String debugString = getDebugString();
-        String[] lines = debugString.split("\n");
-        ScrollableListWidget root = new ScrollableListWidget(null);
-        for(String line : lines) {
-            TextWidget text = new TextWidget(root, line);
-            root.addChild(text);
-        }
-        root.layoutShrinkwrapChildren();
-        return root;
+        return new DebugWidget(null, this);
     }
 
     public static AbstractWidgetWrapper of(ModWidget parent, AbstractWidget widget) {
@@ -153,12 +177,21 @@ public class ModWidget extends GuiComponent implements Renderable {
         return mouseX >= x && mouseX <= x + getWidth() && mouseY >= y && mouseY <= y + getHeight();
     }
 
+    private boolean getDeepLayoutDirty() {
+        if(layoutDirty) return true;
+        for (ModWidget child : children) {
+            if(child.getDeepLayoutDirty()) return true;
+        }
+        return false;
+    }
+
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         if(!getActive()) return;
         if(!isInitialized) {
             init();
         }
+        boolean deepLayoutDirty = getDeepLayoutDirty();
         if(layoutDirty) {
             relayout();
         }
@@ -169,6 +202,11 @@ public class ModWidget extends GuiComponent implements Renderable {
             child.render(stack, mouseX, mouseY, partialTicks);
         }
         stack.popPose();
+        if(deepLayoutDirty) {
+            for(Runnable listener : layoutListeners) {
+                listener.run();
+            }
+        }
     }
 
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {}

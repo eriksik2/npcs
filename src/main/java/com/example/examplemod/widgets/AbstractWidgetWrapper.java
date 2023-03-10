@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 public class AbstractWidgetWrapper extends ModWidget {
 
@@ -20,6 +19,11 @@ public class AbstractWidgetWrapper extends ModWidget {
         this.wrappedWidget.setY(getGlobalY());
         this.setWidth(wrappedWidget.getWidth());
         this.setHeight(wrappedWidget.getHeight());
+    }
+
+    @Override
+    protected void registerDebugProperties() {
+        registerDebugProperty("message", () -> wrappedWidget.getMessage());
     }
 
     @Override
