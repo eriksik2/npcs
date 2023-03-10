@@ -47,8 +47,6 @@ public class TabsWidget extends ModWidget {
 
             Button mcButton = Button.builder(name, (button) -> {
                 int bindex = tabButtons.indexOf(button);
-                System.out.println("Clicked " + name.getString());
-                System.out.println("Index of tab " + bindex);
                 for(int j = 0; j < tabs.size(); j++) {
                     tabs.get(j).setActive(false);
                 }

@@ -51,7 +51,6 @@ public class RoleWidget extends ModWidget {
         popupManager.push(new ModWidget(this) {
             @Override
             public void onInit() {
-                super.onInit();
 
                 new TextWidget(this, "Hello world!");
             }

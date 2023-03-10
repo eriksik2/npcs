@@ -1,11 +1,15 @@
 package com.example.examplemod.npc.team;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.example.examplemod.networking.AddRoleToTeam;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.SetNpcTeamData;
 import com.example.examplemod.npc.role.NpcRole;
 import com.example.examplemod.setup.Registration;
+import com.example.examplemod.widgets.AddRoleWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.PopupManagerWidget;
 import com.example.examplemod.widgets.RoleWidget;
@@ -33,6 +37,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     private Button saveButton;
     private TabsWidget tabs;
     private ScrollableListWidget rolesList;
+    private ScrollableListWidget areasList;
     private PopupManagerWidget popupManager;
     private boolean showDebug = false;
 
@@ -53,6 +58,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     @Override
     protected void init() {
         super.init();
+        System.out.println("init");
 
         popupManager = new PopupManagerWidget(null);
         popupManager.setSize(width, height);
@@ -96,11 +102,11 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
                 rolesList = new ScrollableListWidget(this);
                 rolesList.layoutFillRemaining();
                 rolesList.setGap(5);
-                rolesList.setHeight(rolesList.getHeight() - 60);
+                rolesList.setHeight(rolesList.getHeight() - 40);
 
                 Button bb = Button.builder(Component.literal("Add role"), (button) -> {
                     if(team == null) return;
-                    Messages.sendToServer(new AddRoleToTeam(team.getId(), "New role", "New role"));
+                    popupManager.push(new AddRoleWidget(null, team.getId()));
                 }).build();
                 ModWidget addRoleButton = this.addChild(bb);
 
@@ -108,6 +114,26 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
                 addRoleButton.layoutCenterX();
                 addRoleButton.setHeight(20);
                 addRoleButton.setY(rolesList.getHeight());
+            }
+        });
+        tabs.addTab(Component.literal("Areas"), new ModWidget(tabs) {
+            public void onInit() {
+                this.layoutFillRemaining();
+                areasList = new ScrollableListWidget(this);
+                areasList.layoutFillRemaining();
+                areasList.setGap(5);
+                areasList.setHeight(areasList.getHeight() - 40);
+
+                Button bb = Button.builder(Component.literal("Add new area"), (button) -> {
+                    if(team == null) return;
+                    System.out.println("Add new area");
+                }).build();
+                ModWidget addAreaButton = this.addChild(bb);
+
+                addAreaButton.setWidth(100);
+                addAreaButton.layoutCenterX();
+                addAreaButton.setHeight(20);
+                addAreaButton.setY(areasList.getHeight());
             }
         });
         popupManager.init();
@@ -139,11 +165,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
         this.renderBackground(stack);
         popupManager.render(stack, mouseX, mouseY, partialTicks);
-        super.render(stack, mouseX, mouseY, partialTicks);
         if(debug != null) debug.render(stack, mouseX, mouseY, partialTicks);
-        RenderSystem.disableBlend();
-        this.renderFg(stack, mouseX, mouseY, partialTicks);
-        this.renderTooltip(stack, mouseX, mouseY);
     }
 
     @Override
@@ -173,9 +195,25 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
         return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
-    protected void renderFg(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        //nameInput.render(stack, mouseX, mouseY, partialTicks);
-        //saveButton.render(stack, mouseX, mouseY, partialTicks);
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(debug != null) debug.keyPressed(keyCode, scanCode, modifiers);
+        popupManager.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(debug != null) debug.keyReleased(keyCode, scanCode, modifiers);
+        popupManager.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        if(debug != null) debug.charTyped(codePoint, modifiers);
+        popupManager.charTyped(codePoint, modifiers);
+        return super.charTyped(codePoint, modifiers);
     }
 
     @Override

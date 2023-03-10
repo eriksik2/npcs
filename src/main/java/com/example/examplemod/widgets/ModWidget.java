@@ -33,6 +33,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     // Internal state management
     private boolean isInitialized = false;
     protected boolean layoutDirty = true;
+    private ArrayList<ModWidget> removeQueue = new ArrayList<ModWidget>();
 
     // Layouting properties
     private ArrayList<Runnable> layoutListeners = new ArrayList<Runnable>();
@@ -82,11 +83,14 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     public void deinit() {
         for (ModWidget child : children) {
+            child.parent = null;
             child.deinit();
         }
         children.clear();
+        if(parent != null) parent.removeQueue.add(this);
         layoutListeners.clear();
         isInitialized = false;
+        setActive(false);
         onDeinit();
     }
 
@@ -139,8 +143,8 @@ public class ModWidget extends GuiComponent implements Renderable {
         return new DebugWidget(null, this);
     }
 
-    public static AbstractWidgetWrapper of(ModWidget parent, AbstractWidget widget) {
-        return new AbstractWidgetWrapper(parent, widget);
+    public static <T extends AbstractWidget> AbstractWidgetWrapper<T> of(ModWidget parent, T widget) {
+        return new AbstractWidgetWrapper<T>(parent, widget);
     }
 
     public final void init() {
@@ -174,14 +178,23 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public void layoutShrinkwrapChildren() {
-        int width = 0;
-        int height = 0;
+        int minX = 0;
+        int minY = 0;
+        int maxX = 0;
+        int maxY = 0;
         for (ModWidget child : children) {
-            width = Math.max(width, child.getX() + child.getWidth());
-            height = Math.max(height, child.getY() + child.getHeight());
+            minX = Math.min(minX, child.getX());
+            minY = Math.min(minY, child.getY());
+            maxX = Math.max(maxX, child.getX() + child.getWidth());
+            maxY = Math.max(maxY, child.getY() + child.getHeight());
         }
-        setWidth(width);
-        setHeight(height);
+
+        setWidth(maxX - minX);
+        setHeight(maxY - minY);
+        for (ModWidget child : children) {
+            if(minX < 0) child.setX(child.getX() - minX);
+            if(minY < 0) child.setY(child.getY() - minY);
+        }
     }
 
     public void layoutCenterX() {
@@ -225,6 +238,10 @@ public class ModWidget extends GuiComponent implements Renderable {
             child.render(stack, mouseX, mouseY, partialTicks);
         }
         stack.popPose();
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
         if(deepLayoutDirty) {
             for(Runnable listener : layoutListeners) {
                 listener.run();
@@ -241,8 +258,8 @@ public class ModWidget extends GuiComponent implements Renderable {
         return child;
     }
 
-    public <T extends AbstractWidget> AbstractWidgetWrapper addChild(T child) {
-        return new AbstractWidgetWrapper(this, child);
+    public <T extends AbstractWidget> AbstractWidgetWrapper<T> addChild(T child) {
+        return new AbstractWidgetWrapper<T>(this, child);
     }
 
     public void clearChildren() {
@@ -254,28 +271,92 @@ public class ModWidget extends GuiComponent implements Renderable {
         for (ModWidget child : children) {
             if(child.mousePressed(mouseX, mouseY, button)) return true;
         }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
         return onMousePressed(mouseX, mouseY, button);
     }
- 
-    public void mouseReleased(double mouseX, double mouseY) {
-        if(!getActive()) return;
-        onMouseReleased(mouseX, mouseY);
-        for (ModWidget child : children) {
-            child.mouseReleased(mouseX, mouseY);
-        }
-    }
-
-    public void mouseScrolled(double mouseX, double mouseY, double amount) {
-        if(!getActive()) return;
-        onMouseScrolled(mouseX, mouseY, amount);
-        for (ModWidget child : children) {
-            child.mouseScrolled(mouseX, mouseY, amount);
-        }
-    }
-
     public boolean onMousePressed(double mouseX, double mouseY, int button) { return false; }
-    public void onMouseReleased(double mouseX, double mouseY) {}
-    public void onMouseScrolled(double mouseX, double mouseY, double amount) {}
+ 
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(!getActive()) return false;
+        
+        for (ModWidget child : children) {
+            if(child.mouseReleased(mouseX, mouseY, button)) return true;
+        }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
+        return onMouseReleased(mouseX, mouseY, button);
+    }
+    public boolean onMouseReleased(double mouseX, double mouseY, int button) { return false; }
+
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!getActive()) return false;
+        for (ModWidget child : children) {
+            if(child.mouseScrolled(mouseX, mouseY, amount)) return true;
+        }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
+        return onMouseScrolled(mouseX, mouseY, amount);
+    }
+    public boolean onMouseScrolled(double mouseX, double mouseY, double amount) { return false; }
+
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(!getActive()) return false;
+        for (ModWidget child : children) {
+            if(child.keyPressed(keyCode, scanCode, modifiers)) return true;
+        }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
+        return onKeyPressed(keyCode, scanCode, modifiers);
+    }
+    public boolean onKeyPressed(int keyCode, int scanCode, int modifiers) { return false; }
+
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(!getActive()) return false;
+        for (ModWidget child : children) {
+            if(child.keyReleased(keyCode, scanCode, modifiers)) return true;
+        }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
+        return onKeyReleased(keyCode, scanCode, modifiers);
+    }
+    public boolean onKeyReleased(int keyCode, int scanCode, int modifiers) { return false; }
+
+    public boolean charTyped(char codePoint, int modifiers) {
+        if(!getActive()) return false;
+        for (ModWidget child : children) {
+            if(child.charTyped(codePoint, modifiers)) return true;
+        }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
+        return onCharTyped(codePoint, modifiers);
+    }
+    public boolean onCharTyped(char codePoint, int modifiers) { return false; }
+
+    public boolean changeFocus(boolean lookForwards) {
+        if(!getActive()) return false;
+        for (ModWidget child : children) {
+            if(child.changeFocus(lookForwards)) return true;
+        }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
+        return onChangeFocus(lookForwards);
+    }
+    public boolean onChangeFocus(boolean lookForwards) { return false; }
 
     public void tick() {
         if(!getActive()) return;
@@ -283,9 +364,17 @@ public class ModWidget extends GuiComponent implements Renderable {
         for (ModWidget child : children) {
             child.tick();
         }
+        for (ModWidget child : removeQueue) {
+            children.remove(child);
+        }
+        removeQueue.clear();
     }
 
     public void onTick() {}
+
+    public boolean isInitialized() {
+        return isInitialized;
+    }
 
     public void setActive(boolean active) {
         this.active = active;

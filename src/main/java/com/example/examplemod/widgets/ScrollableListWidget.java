@@ -15,14 +15,14 @@ public class ScrollableListWidget extends ModWidget {
     }
 
     @Override
-    public void onMouseScrolled(double mouseX, double mouseY, double amount) {
-        if(!isMouseOver(mouseX, mouseY)) return;
+    public boolean onMouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!isMouseOver(mouseX, mouseY)) return false;
         if(childrenHeight > getInnerHeight()) {
             scrollTarget -= amount*scrollSpeed;
         } else {
             scrollTarget = 0;
         }
-        super.onMouseScrolled(mouseX, mouseY, amount);
+        return super.onMouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
@@ -88,4 +88,23 @@ public class ScrollableListWidget extends ModWidget {
         super.render(stack, mouseX, mouseY, partialTicks);
         disableScissor();
     }
+
+    @Override
+    public boolean mousePressed(double mouseX, double mouseY, int button) {
+        if(!isMouseOver(mouseX, mouseY)) return false;
+        return super.mousePressed(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(!isMouseOver(mouseX, mouseY)) return false;
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+    
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!isMouseOver(mouseX, mouseY)) return false;
+        return super.mouseScrolled(mouseX, mouseY, amount);
+    }
+
 }

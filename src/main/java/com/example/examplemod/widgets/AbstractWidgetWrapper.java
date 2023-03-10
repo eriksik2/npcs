@@ -6,11 +6,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.components.AbstractWidget;
 
-public class AbstractWidgetWrapper extends ModWidget {
+public class AbstractWidgetWrapper<T extends AbstractWidget> extends ModWidget {
 
-    private AbstractWidget wrappedWidget;
+    private T wrappedWidget;
 
-    public AbstractWidgetWrapper(ModWidget parent, AbstractWidget wrappedWidget) {
+    public AbstractWidgetWrapper(ModWidget parent, T wrappedWidget) {
         super(parent);
         this.wrappedWidget = wrappedWidget;
         this.setX(wrappedWidget.getX());
@@ -51,13 +51,32 @@ public class AbstractWidgetWrapper extends ModWidget {
     }
  
     @Override
-    public void onMouseReleased(double mouseX, double mouseY) {
-        wrappedWidget.onRelease(mouseX, mouseY);
+    public boolean onMouseReleased(double mouseX, double mouseY, int button) {
+        return wrappedWidget.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public void onMouseScrolled(double mouseX, double mouseY, double amount) {
-        //wrappedWidget.onScroll(mouseX, mouseY, amount);
+    public boolean onMouseScrolled(double mouseX, double mouseY, double amount) {
+        return wrappedWidget.mouseScrolled(mouseX, mouseY, amount);
+    }
+
+    @Override
+    public boolean onKeyPressed(int keyCode, int scanCode, int modifiers) {
+        return wrappedWidget.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean onKeyReleased(int keyCode, int scanCode, int modifiers) {
+        return wrappedWidget.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean onCharTyped(char codePoint, int modifiers) {
+        return wrappedWidget.charTyped(codePoint, modifiers);
+    }
+
+    public T get() {
+        return wrappedWidget;
     }
 
     @Override

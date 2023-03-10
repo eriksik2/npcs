@@ -55,6 +55,11 @@ public class NpcRole {
         buf.writeNbt(toCompoundTag());
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode() ^ description.hashCode();
+    }
+
     public Integer getId() {
         return id;
     }

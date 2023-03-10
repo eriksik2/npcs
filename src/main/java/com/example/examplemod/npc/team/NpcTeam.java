@@ -19,13 +19,13 @@ public class NpcTeam {
 
     private NpcManager manager;
     private Integer id;
+    private int nextRoleId = 0;
+
+    
     private String name;
     private ArrayList<UUID> owners;
-
     private ArrayList<Integer> npcMembers;
-
     private ArrayList<NpcRole> roles;
-    private int nextRoleId = 0;
 
     public NpcTeam(Integer id, NpcManager manager) {
         this.id = id;
