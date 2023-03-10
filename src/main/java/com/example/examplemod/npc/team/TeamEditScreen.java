@@ -96,7 +96,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
                 rolesList = new ScrollableListWidget(this);
                 rolesList.layoutFillRemaining();
                 rolesList.setGap(5);
-                rolesList.setHeight(rolesList.getHeight() - 20);
+                rolesList.setHeight(rolesList.getHeight() - 60);
 
                 Button bb = Button.builder(Component.literal("Add role"), (button) -> {
                     if(team == null) return;
@@ -107,7 +107,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
                 addRoleButton.setWidth(100);
                 addRoleButton.layoutCenterX();
                 addRoleButton.setHeight(20);
-                addRoleButton.setY(this.getInnerHeight() - 20);
+                addRoleButton.setY(rolesList.getHeight());
             }
         });
         popupManager.init();
@@ -127,6 +127,8 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        if(popupManager != null) popupManager.tick();
+        if(debug != null) debug.tick();
         NpcTeam newTeam = teamBroker.get(menu.getTeamId());
         int hc1 = team == null ? 0 : team.hashCode();
         int hc2 = newTeam == null ? 0 : newTeam.hashCode();

@@ -6,8 +6,9 @@ public class ScrollableListWidget extends ModWidget {
 
     private int childrenHeight = 0;
     private int gap = 0;
+    private float scrollTarget = 0;
     private float scroll = 0;
-    private float scrollSpeed = 8.0f;
+    private float scrollSpeed = 16.0f;
 
     public ScrollableListWidget(ModWidget parent) {
         super(parent);
@@ -16,13 +17,32 @@ public class ScrollableListWidget extends ModWidget {
     @Override
     public void onMouseScrolled(double mouseX, double mouseY, double amount) {
         if(!isMouseOver(mouseX, mouseY)) return;
-        scroll += amount*scrollSpeed;
+        if(childrenHeight > getInnerHeight()) {
+            scrollTarget -= amount*scrollSpeed;
+        } else {
+            scrollTarget = 0;
+        }
         super.onMouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
+    public void onTick() {
+        if(scrollTarget != scroll) {
+            if(Math.abs(scrollTarget - scroll) < 1) {
+                scroll = scrollTarget;
+            } else {
+                scroll += (scrollTarget - scroll) * 0.20f;
+            }
+        }
+        if(scrollTarget > childrenHeight - getInnerHeight()) scrollTarget = childrenHeight - getInnerHeight();
+        if(scrollTarget < 0) scrollTarget = 0;
+        super.onTick();
+    }
+
+    @Override
     public int getInnerY() {
-        return super.getInnerY() + (int)scroll;
+        if(childrenHeight <= getInnerHeight()) return super.getInnerY();
+        return super.getInnerY() - Math.round(scroll);
     }
 
     @Override
@@ -32,6 +52,7 @@ public class ScrollableListWidget extends ModWidget {
             child.setY(childrenHeight);
             childrenHeight += child.getHeight() + gap;
         }
+        if(childrenHeight != 0) childrenHeight -= gap;
     }
 
     @Override
@@ -63,7 +84,7 @@ public class ScrollableListWidget extends ModWidget {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        enableScissor(getGlobalX(), getGlobalY(), getInnerWidth(), getInnerHeight());
+        enableScissor(getGlobalX(), getGlobalY(), getGlobalX()+getInnerWidth(), getGlobalY()+getInnerHeight());
         super.render(stack, mouseX, mouseY, partialTicks);
         disableScissor();
     }
