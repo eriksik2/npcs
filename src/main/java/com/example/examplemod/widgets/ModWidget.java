@@ -1,12 +1,22 @@
 package com.example.examplemod.widgets;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+
+class DebugPropertyEntry<T> {
+    public String name;
+    public Supplier<T> supplier;
+    public DebugPropertyEntry(String name, Supplier<T> supplier) {
+        this.name = name;
+        this.supplier = supplier;
+    }
+}
 
 public class ModWidget extends GuiComponent implements Renderable {
 
@@ -26,28 +36,52 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     public ModWidget(ModWidget parent) {
         if(parent != null) parent.addChild(this);
+
+        registerDebugProperty("global", () -> globalX + ", " + globalY);
+        registerDebugProperty("local", () -> localX + ", " + localY);
+        registerDebugProperty("size", () -> width + ", " + height);
+        registerDebugProperty("padding", () -> padding);
+        registerDebugProperties();
     }
 
-    public String toDebugString() {
-        return toDebugString(0);
+    protected void registerDebugProperties() {
     }
-    public String toDebugString(int indent) {
+
+    private ArrayList<DebugPropertyEntry<?>> debugProperties = new ArrayList<DebugPropertyEntry<?>>();
+    public <T> void registerDebugProperty(String name, Supplier<T> supplier) {
+        debugProperties.add(new DebugPropertyEntry<T>(name, supplier));
+    }
+    public String getDebugName() {
+        String name = getClass().getSimpleName();
+        if(name == null || name.isEmpty()) {
+            name = getClass().getName();
+            name = name.substring(name.lastIndexOf('.') + 1);
+        }
+        return name;
+    }
+
+    public String getDebugString() {
+        return getDebugString(0);
+    }
+    public String getDebugString(int indent) {
         String indentString = "";
         for (int i = 0; i < indent; i++) indentString += "  ";
-        String result = indentString + this.getClass().getSimpleName() + "(\n";
-        result += indentString + "  global: " + globalX + ", " + globalY + "\n";
-        result += indentString + "  local:  " + localX + ", " + localY + "\n";
-        result += indentString + "  size:   " + width + ", " + height + "\n";
-        result += indentString + "  padding: " + padding + "\n";
+        if(!getActive()) {
+            return indentString + "(inactive " + getDebugName() + ")\n";
+        }
+        String result = indentString + getDebugName() + "(\n";
+        for (DebugPropertyEntry<?> entry : debugProperties) {
+            result += indentString + "  " + entry.name + ": " + entry.supplier.get().toString() + "\n";
+        }
         result += indentString + ")\n";
         for (ModWidget child : children) {
-            result += child.toDebugString(indent + 1);
+            result += child.getDebugString(indent + 1);
         }
         return result;
     }
 
     public ModWidget debugWidget() {
-        String debugString = toDebugString();
+        String debugString = getDebugString();
         String[] lines = debugString.split("\n");
         ScrollableListWidget root = new ScrollableListWidget(null);
         for(String line : lines) {
@@ -121,6 +155,7 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        if(!getActive()) return;
         if(!isInitialized) {
             init();
         }
@@ -154,6 +189,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public boolean mousePressed(double mouseX, double mouseY, int button) {
+        if(!getActive()) return false;
         for (ModWidget child : children) {
             if(child.mousePressed(mouseX, mouseY, button)) return true;
         }
@@ -161,6 +197,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
  
     public void mouseReleased(double mouseX, double mouseY) {
+        if(!getActive()) return;
         onMouseReleased(mouseX, mouseY);
         for (ModWidget child : children) {
             child.mouseReleased(mouseX, mouseY);
@@ -168,6 +205,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public void mouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!getActive()) return;
         onMouseScrolled(mouseX, mouseY, amount);
         for (ModWidget child : children) {
             child.mouseScrolled(mouseX, mouseY, amount);
@@ -179,6 +217,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     public void onMouseScrolled(double mouseX, double mouseY, double amount) {}
 
     public void tick() {
+        if(!getActive()) return;
         onTick();
         for (ModWidget child : children) {
             child.tick();
@@ -189,7 +228,8 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     public void setActive(boolean active) {
         this.active = active;
-        parent.setLayoutDirty();
+        setLayoutDirty();
+        if(parent != null) parent.setLayoutDirty();
     }
 
     public boolean getActive() {
@@ -297,20 +337,22 @@ public class ModWidget extends GuiComponent implements Renderable {
         return false;
     }
 
-    public boolean layoutBasedOnParent() {
-        return false;
+    public boolean sizeBasedOnParent() {
+        return true;
     }
 
     public void setLayoutDirty() {
-        setLayoutDirty(true, null);
+        setLayoutDirty(true, true);
     }
-    public void setLayoutDirty(boolean doParent, ModWidget dontDo) {
-        if(dontDo == this) return;
+    public void setLayoutDirty(boolean doParent, boolean doChildren) {
         layoutDirty = true;
-        if(doParent && parent != null && parent.layoutBasedOnChildren()) parent.setLayoutDirty(true, this);
-        for (ModWidget child : children) {
-            if(!child.layoutBasedOnParent()) continue;
-            child.setLayoutDirty(false, null);
+        if(doParent && parent != null && parent.layoutBasedOnChildren()) parent.setLayoutDirty(true, false);
+        if(doChildren) {
+            for (ModWidget child : children) {
+                if(child.sizeBasedOnParent()) {
+                    child.setLayoutDirty(false, true);
+                }
+            }
         }
     }
 

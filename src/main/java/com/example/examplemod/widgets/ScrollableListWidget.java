@@ -26,13 +26,6 @@ public class ScrollableListWidget extends ModWidget {
     }
 
     @Override
-    public void onRelayoutPre() {
-        for (ModWidget child : children) {
-            child.setWidth(this.getInnerWidth());
-        }
-    }
-
-    @Override
     public void onRelayoutPost() {
         childrenHeight = 0;
         for (ModWidget child : children) {
@@ -61,6 +54,11 @@ public class ScrollableListWidget extends ModWidget {
     
     public int getGap() {
         return gap;
+    }
+
+    @Override
+    public boolean layoutBasedOnChildren() {
+        return true;
     }
 
     @Override

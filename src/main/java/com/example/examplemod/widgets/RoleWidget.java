@@ -27,6 +27,19 @@ public class RoleWidget extends ModWidget {
     }
 
     @Override
+    public void onRelayoutPre() {
+        if(parent != null) {
+            setX(0);
+            setWidth(parent.getInnerWidth());
+        }
+    }
+
+    @Override
+    public boolean sizeBasedOnParent() {
+        return true;
+    }
+
+    @Override
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         fill(stack, 0, 0, getWidth(), getHeight(), -1072689136);
         font.draw(stack, role.getName(), 0, 0, 0xFFFFFF);

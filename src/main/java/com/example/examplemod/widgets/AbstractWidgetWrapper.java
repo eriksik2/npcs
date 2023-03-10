@@ -23,6 +23,11 @@ public class AbstractWidgetWrapper extends ModWidget {
     }
 
     @Override
+    public String getDebugName() {
+        return "Minecraft." + wrappedWidget.getClass().getSimpleName();
+    }
+
+    @Override
     public void onRelayoutPost() {
         this.wrappedWidget.setX(getGlobalX());
         this.wrappedWidget.setY(getGlobalY());
