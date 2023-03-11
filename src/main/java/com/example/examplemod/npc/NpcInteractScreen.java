@@ -43,16 +43,17 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
 
     static final int SCROLLBAR_W = 7;
 
-    static final int TEXT_X = 8;
-    static final int TEXT_Y = 22;
-    static final int TEXT_W = 90;
-    static final int TEXT_H = 156;
+    static final int TEXT_PADDING = 2;
+    static final int TEXT_X = 108 + TEXT_PADDING;
+    static final int TEXT_Y = 106 + TEXT_PADDING;
+    static final int TEXT_W = 153 - 2*TEXT_PADDING;
+    static final int TEXT_H = 74 - 2*TEXT_PADDING;
 
-    static final int OPTIONS_X = 108;
-    static final int OPTIONS_Y = 106;
-    static final int OPTIONS_W = 153;
-    static final int OPTIONS_H = 52;
-    static final int OPTIONS_PADDING = 1;
+    static final int OPTIONS_X = 8;
+    static final int OPTIONS_Y = 22;
+    static final int OPTIONS_W = 90;
+    static final int OPTIONS_H = 156;
+    static final int OPTIONS_PADDING = 0;
     static final int OPTIONS_GAP = 2;
 
     static final int OPTION_PADDING = 2;
@@ -166,7 +167,7 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
         int optionWidth = OPTIONS_W - 2*OPTIONS_PADDING;
         int optionX = OPTIONS_X + OPTIONS_PADDING;
         int scrollbarX = OPTIONS_X + 1 + OPTIONS_W;
-        fillGradient(stack, scrollbarX, optionsScrollbarY, scrollbarX + SCROLLBAR_W, optionsScrollbarY + optionsScrollbarH, -1072689136, -804253680);
+        //fillGradient(stack, scrollbarX, optionsScrollbarY, scrollbarX + SCROLLBAR_W, optionsScrollbarY + optionsScrollbarH, -1072689136, -804253680);
         for(int i = 0; i < options.size(); ++i) {
             String text = options.get(i);
             renderOption(stack, mouseX, mouseY, text, optionX, optionY[i], optionWidth);

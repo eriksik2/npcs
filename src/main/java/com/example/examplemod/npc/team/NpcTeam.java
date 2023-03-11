@@ -2,7 +2,10 @@ package com.example.examplemod.npc.team;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.example.examplemod.npc.NpcManager;
@@ -15,6 +18,95 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
+class NpcAssignedRoles {
+    private HashMap<Integer, HashSet<Integer>> npcRolesMap = new HashMap<>();
+
+    public NpcAssignedRoles() {
+    }
+
+    public NpcAssignedRoles(ListTag tag) {
+        for(Tag value : tag) {
+            CompoundTag entry = (CompoundTag) value;
+            int npcId = entry.getInt("npcId");
+            HashSet<Integer> roles = new HashSet<>();
+            for(int roleId : entry.getIntArray("roles")) {
+                roles.add(roleId);
+            }
+            npcRolesMap.put(npcId, roles);
+        }
+    }
+
+    public ListTag toListTag() {
+        ListTag tag = new ListTag();
+        for(Integer npcId : npcRolesMap.keySet()) {
+            CompoundTag entry = new CompoundTag();
+            entry.putInt("npcId", npcId);
+            HashSet<Integer> roles = npcRolesMap.get(npcId);
+            int[] rolesArray = new int[roles.size()];
+            int i = 0;
+            for(Integer roleId : roles) {
+                rolesArray[i] = roleId;
+                i++;
+            }
+            entry.putIntArray("roles", rolesArray);
+            tag.add(entry);
+        }
+        return tag;
+    }
+
+    public boolean npcHasRole(Integer npcId, Integer roleId) {
+        HashSet<Integer> roles = npcRolesMap.get(npcId);
+        if(roles == null) return false;
+        return roles.contains(roleId);
+    }
+
+    public List<Integer> getRoles(Integer npcId) {
+        HashSet<Integer> roles = npcRolesMap.get(npcId);
+        if(roles == null) return new ArrayList<>();
+        return new ArrayList<>(roles);
+    }
+
+    public boolean addRole(Integer npcId, Integer roleId) {
+        HashSet<Integer> roles = npcRolesMap.get(npcId);
+        if(roles == null) {
+            roles = new HashSet<>();
+            npcRolesMap.put(npcId, roles);
+        }
+        boolean didAdd = roles.add(roleId);
+        if(!didAdd) return false;
+        return true;
+    }
+
+    public boolean removeRole(Integer npcId, Integer roleId) {
+        HashSet<Integer> roles = npcRolesMap.get(npcId);
+        if(roles == null) return false;
+        roles.remove(roleId);
+        if(roles.size() == 0) npcRolesMap.remove(npcId);
+        return true;
+    }
+
+    public boolean removeRole(Integer roleId) {
+        boolean didRemove = false;
+        for(Integer npcId : npcRolesMap.keySet()) {
+            HashSet<Integer> roles = npcRolesMap.get(npcId);
+            if(roles == null) continue;
+            if(roles.remove(roleId)) didRemove = true;
+            if(roles.size() == 0) npcRolesMap.remove(npcId);
+        }
+        return didRemove;
+    }
+
+    public void clearRoles(Integer npcId) {
+        npcRolesMap.remove(npcId);
+    }
+
+    @Override
+    public int hashCode() {
+        return npcRolesMap.hashCode();
+    }
+   
+}
+
 public class NpcTeam {
 
     private NpcManager manager;
@@ -26,16 +118,17 @@ public class NpcTeam {
     private ArrayList<UUID> owners;
     private ArrayList<Integer> npcMembers;
     private ArrayList<NpcRole> roles;
+    private NpcAssignedRoles npcAssignedRoles;
 
     public static NpcTeam initialNpcTeam(Integer id, NpcManager manager) {
         NpcTeam team = new NpcTeam(id, manager);
-        team.addRole("Wheat farming", "Plant and harvest wheat.");
-        team.addRole("Woodcutting", "Cut down trees and plant saplings.");
-        team.addRole("Fishing", "Fish for fish and other items.");
-        team.addRole("Combat", "Fight mobs and players.");
-        team.addRole("Cooking", "Cook food.");
-        team.addRole("Sorting", "Sort items into the right chests.");
-        team.addRole("Animal husbandry", "Feed and breed animals.");
+        team.addRole("Wheat farmer", "Plant and harvest wheat.");
+        team.addRole("Woodcutter", "Cut down trees and plant saplings.");
+        team.addRole("Fisher", "Fish for fish and other items.");
+        team.addRole("Soldier", "Fight mobs and players.");
+        team.addRole("Cook", "Cook food.");
+        team.addRole("Labourer", "Sort items into the right chests.");
+        team.addRole("Cow rancher", "Feed and breed cows.");
         return team;
     }
 
@@ -45,6 +138,7 @@ public class NpcTeam {
         owners = new ArrayList<UUID>();
         npcMembers = new ArrayList<Integer>();
         roles = new ArrayList<NpcRole>();
+        npcAssignedRoles = new NpcAssignedRoles();
     }
 
     public NpcTeam(CompoundTag data, NpcManager manager) {
@@ -68,6 +162,8 @@ public class NpcTeam {
             roles.add(new NpcRole((CompoundTag) value, this));
         }
         nextRoleId = data.getInt("nextRoleId");
+
+        npcAssignedRoles = new NpcAssignedRoles(data.getList("npcAssignedRoles", Tag.TAG_COMPOUND));
     }
 
     public CompoundTag toCompoundTag() {
@@ -90,6 +186,8 @@ public class NpcTeam {
         data.put("roles", rolesTag);
         data.putInt("nextRoleId", nextRoleId);
 
+        data.put("npcAssignedRoles", npcAssignedRoles.toListTag());
+
         return data;
     }
 
@@ -108,6 +206,7 @@ public class NpcTeam {
         hash ^= owners == null ? 0 : owners.hashCode();
         hash ^= npcMembers == null ? 0 : npcMembers.hashCode();
         hash ^= roles == null ? 0 : roles.hashCode();
+        hash ^= npcAssignedRoles == null ? 0 : npcAssignedRoles.hashCode();
         return hash;
     }
 
@@ -167,9 +266,7 @@ public class NpcTeam {
     public NpcTeam removeNpcId(Integer npcId) {
         boolean didRemove = npcMembers.remove(npcId);
         if(!didRemove) return this;
-        for(NpcRole role : roles) {
-            role.removeNpcId(npcId);
-        }
+        npcAssignedRoles.clearRoles(npcId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeNpcId presumably called on the client.");
         manager.setDirty();
         return this;
@@ -179,11 +276,24 @@ public class NpcTeam {
         return roles;
     }
 
-    public NpcRole getRoleOf(int npcId) {
-        for(NpcRole role : roles) {
-            if(role.getNpcIds().contains(npcId)) return role;
-        }
-        return null;
+    public List<Integer> getRolesOf(Integer npcId) {
+        return npcAssignedRoles.getRoles(npcId);
+    }
+
+    public NpcTeam assignRole(Integer npcId, Integer roleId) {
+        boolean didAdd = npcAssignedRoles.addRole(npcId, roleId);
+        if(!didAdd) return this;
+        if(manager == null) throw new RuntimeException("NpcTeam.assignRole presumably called on the client.");
+        manager.setDirty();
+        return this;
+    }
+
+    public NpcTeam unassignRole(Integer npcId, Integer roleId) {
+        boolean didRemove = npcAssignedRoles.removeRole(npcId, roleId);
+        if(!didRemove) return this;
+        if(manager == null) throw new RuntimeException("NpcTeam.unassignRole presumably called on the client.");
+        manager.setDirty();
+        return this;
     }
 
     public NpcRole addRole(String name, String description) {
@@ -196,7 +306,9 @@ public class NpcTeam {
     }
 
     public NpcTeam removeRole(int roleId) {
-        roles.removeIf(role -> role.getId() == roleId);
+        boolean didRemove = roles.removeIf(role -> role.getId() == roleId);
+        if(!didRemove) return this;
+        npcAssignedRoles.removeRole(roleId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
         manager.setDirty();
         return this;
