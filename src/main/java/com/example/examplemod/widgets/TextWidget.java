@@ -25,6 +25,7 @@ public class TextWidget extends ModWidget {
 
     public void setFont(Font font) {
         this.font = font;
+        setLayoutDirty();
     }
 
     public Font getFont() {
@@ -33,18 +34,26 @@ public class TextWidget extends ModWidget {
 
     public void setText(Component text) {
         this.text = text;
+        setLayoutDirty();
     }
     
     public void setText(String text) {
-        this.text = Component.literal(text);
+        setText(Component.literal(text));
     }
 
     public Component getText() {
         return text;
     }
 
+    @Override
+    public void setWidth(int width) {
+        super.setWidth(width);
+        setHeight(getFont().wordWrapHeight(getText(), getWidth()));
+    }
+
     public void setWrap(boolean wrap) {
         this.wrap = wrap;
+        setLayoutDirty();
     }
 
     public boolean getWrap() {
@@ -72,7 +81,7 @@ public class TextWidget extends ModWidget {
     @Override
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         if(getWrap()) {
-            getFont().drawWordWrap(getText(), 0, 0, getWidth(), getColor());
+            getFont().drawWordWrap(getText(), getGlobalX(), getGlobalY(), getWidth(), getColor());
         } else {
             getFont().draw(stack, getText(), 0, 0, getColor());
         }

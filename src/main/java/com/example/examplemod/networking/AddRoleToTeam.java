@@ -47,9 +47,6 @@ public class AddRoleToTeam implements Message {
                 return;
             }
             team.addRole(name, description);
-            System.out.println(team);
-            System.out.println("Added role " + name + " to team " + teamId);
-            System.out.println("Now has " + team.getRoles().size() + " roles");
         });
         return true;
     }

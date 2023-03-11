@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 
 public class AbstractWidgetWrapper<T extends AbstractWidget> extends ModWidget {
@@ -38,6 +39,11 @@ public class AbstractWidgetWrapper<T extends AbstractWidget> extends ModWidget {
     }
 
     @Override
+    public int getPadding() {
+        return 0;
+    }
+
+    @Override
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         stack.pushPose();
         stack.translate(-getGlobalX(), -getGlobalY(), 0);
@@ -62,6 +68,9 @@ public class AbstractWidgetWrapper<T extends AbstractWidget> extends ModWidget {
 
     @Override
     public boolean onKeyPressed(int keyCode, int scanCode, int modifiers) {
+        if(wrappedWidget instanceof AbstractButton wrappedButton) {
+            return false; // Minecraft buttons get clicked when you press space, this stops that.
+        }
         return wrappedWidget.keyPressed(keyCode, scanCode, modifiers);
     }
 

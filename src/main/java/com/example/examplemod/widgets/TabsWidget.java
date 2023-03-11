@@ -23,12 +23,13 @@ public class TabsWidget extends ModWidget {
         super(parent);
     }
 
-    public void addTab(Component name, ModWidget tab) {
+    public <T extends ModWidget> T addTab(Component name, T tab) {
         tabName.add(name);
         if(tabs.size() == 0) tab.setActive(true);
         else tab.setActive(false);
         tabs.add(tab);
         setLayoutDirty();
+        return tab;
     }
 
     @Override
@@ -36,6 +37,7 @@ public class TabsWidget extends ModWidget {
         tabButtons.clear();
         clearChildren();
         buttonsWidth = 0;
+        float buttonStep = getInnerWidth() / tabs.size();
         for(int i = 0; i < tabs.size(); i++) {
             Component name = tabName.get(i);
             ModWidget tab = tabs.get(i);
@@ -54,10 +56,10 @@ public class TabsWidget extends ModWidget {
             }).build();
             tabButtons.add(mcButton);
             ModWidget tabButton = addChild(mcButton);
-            int width = Minecraft.getInstance().font.width(name) + 4;
+            int width = Minecraft.getInstance().font.width(name) + 10;
             tabButton.setWidth(width);
             tabButton.setHeight(buttonsHeight);
-            tabButton.setX(buttonsWidth);
+            tabButton.setX(Math.round(buttonStep * i + (buttonStep - width) / 2));
             tabButton.setY(0);
             buttonsWidth += width;
         }

@@ -13,9 +13,11 @@ import com.example.examplemod.widgets.AddRoleWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.PopupManagerWidget;
 import com.example.examplemod.widgets.RoleWidget;
+import com.example.examplemod.widgets.RolesExplorerWidget;
 import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.TabsWidget;
 import com.example.examplemod.widgets.TextWidget;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
@@ -36,7 +38,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     private EditBox nameInput;
     private Button saveButton;
     private TabsWidget tabs;
-    private ScrollableListWidget rolesList;
+    private RolesExplorerWidget rolesExplorer;
     private ScrollableListWidget areasList;
     private PopupManagerWidget popupManager;
     private boolean showDebug = false;
@@ -58,14 +60,13 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     @Override
     protected void init() {
         super.init();
-        System.out.println("init");
 
         popupManager = new PopupManagerWidget(null);
         popupManager.setSize(width, height);
         tabs = new TabsWidget(popupManager);
         tabs.setWidth(width);
         tabs.setHeight(height);
-        tabs.addTab(Component.literal("Team"), new ModWidget(tabs) {
+        tabs.addTab(Component.literal("Settings"), new ModWidget(tabs) {
             public void onInit() {
                 this.layoutFillRemaining();
                 this.setPadding(10);
@@ -96,26 +97,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
                 addChild(saveButton).layoutCenterX();
             }
         });
-        tabs.addTab(Component.literal("Roles"), new ModWidget(tabs) {
-            public void onInit() {
-                this.layoutFillRemaining();
-                rolesList = new ScrollableListWidget(this);
-                rolesList.layoutFillRemaining();
-                rolesList.setGap(5);
-                rolesList.setHeight(rolesList.getHeight() - 40);
-
-                Button bb = Button.builder(Component.literal("Add role"), (button) -> {
-                    if(team == null) return;
-                    popupManager.push(new AddRoleWidget(null, team.getId()));
-                }).build();
-                ModWidget addRoleButton = this.addChild(bb);
-
-                addRoleButton.setWidth(100);
-                addRoleButton.layoutCenterX();
-                addRoleButton.setHeight(20);
-                addRoleButton.setY(rolesList.getHeight());
-            }
-        });
+        rolesExplorer = tabs.addTab(Component.literal("Roles"), new RolesExplorerWidget(tabs, menu.getTeamId(), popupManager));
         tabs.addTab(Component.literal("Areas"), new ModWidget(tabs) {
             public void onInit() {
                 this.layoutFillRemaining();
@@ -141,12 +123,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
     private void onNewTeam() {
         if(team == null) return;
-        if(rolesList != null) {
-            rolesList.clearChildren();
-            for(NpcRole role : team.getRoles()) {
-                new RoleWidget(rolesList, popupManager, role);
-            }
-        }
+        if(rolesExplorer != null) rolesExplorer.setRolesList(team.getRoles());
         if(nameInput != null) nameInput.setValue(team.getName());
         if(titleWidget != null) titleWidget.setMessage(Component.literal("Editing team: " + team.getName()));
     }
@@ -184,36 +161,35 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
             return true;
         }
         if(debug != null && debug.mousePressed(mouseX, mouseY, button)) return true;
-        if(popupManager.mousePressed(mouseX, mouseY, button)) return true;
-        return super.mouseClicked(mouseX, mouseY, button);
+        return popupManager.mousePressed(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if(debug != null) debug.mouseScrolled(mouseX, mouseY, amount);
-        popupManager.mouseScrolled(mouseX, mouseY, amount);
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return popupManager.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if(debug != null) debug.keyPressed(keyCode, scanCode, modifiers);
-        popupManager.keyPressed(keyCode, scanCode, modifiers);
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        if(popupManager.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if(keyCode == 256) {
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
+        return false;
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if(debug != null) debug.keyReleased(keyCode, scanCode, modifiers);
-        popupManager.keyReleased(keyCode, scanCode, modifiers);
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return popupManager.keyReleased(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if(debug != null) debug.charTyped(codePoint, modifiers);
-        popupManager.charTyped(codePoint, modifiers);
-        return super.charTyped(codePoint, modifiers);
+        return popupManager.charTyped(codePoint, modifiers);
     }
 
     @Override

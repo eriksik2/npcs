@@ -160,6 +160,7 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     public final void relayout() {
         init();
+        if(!getActive()) return;
         onRelayoutPre();
         for (ModWidget child : children) {
             child.relayout();
@@ -189,8 +190,8 @@ public class ModWidget extends GuiComponent implements Renderable {
             maxY = Math.max(maxY, child.getY() + child.getHeight());
         }
 
-        setWidth(maxX - minX);
-        setHeight(maxY - minY);
+        setInnerWidth(maxX - minX);
+        setInnerHeight(maxY - minY);
         for (ModWidget child : children) {
             if(minX < 0) child.setX(child.getX() - minX);
             if(minY < 0) child.setY(child.getY() - minY);
@@ -205,6 +206,18 @@ public class ModWidget extends GuiComponent implements Renderable {
     public void layoutCenterY() {
         if(parent == null) return;
         setY((parent.getInnerHeight() - getHeight()) / 2);
+    }
+
+    public void layoutFillX() {
+        if(parent == null) return;
+        setX(0);
+        setWidth(parent.getInnerWidth());
+    }
+
+    public void layoutFillY() {
+        if(parent == null) return;
+        setY(0);
+        setHeight(parent.getInnerHeight());
     }
 
     public boolean isMouseOver(double mouseX, double mouseY) {
@@ -395,11 +408,19 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public int getInnerWidth() {
-        return getWidth() - padding * 2;
+        return getWidth() - getPadding() * 2;
     }
 
     public int getInnerHeight() {
-        return getHeight() - padding * 2;
+        return getHeight() - getPadding() * 2;
+    }
+
+    public void setInnerWidth(int width) {
+        setWidth(width + getPadding() * 2);
+    }
+
+    public void setInnerHeight(int height) {
+        setHeight(height + getPadding() * 2);
     }
 
     public int getGlobalX() {
@@ -443,8 +464,8 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     private void refreshGlobalPosition() {
         if(parent == null) {
-            globalX = localX;
-            globalY = localY;
+            globalX = getX();
+            globalY = getY();
         } else {
             this.globalX = parent.getGlobalX() + parent.getInnerX() + getX();
             this.globalY = parent.getGlobalY() + parent.getInnerY() + getY();

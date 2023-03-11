@@ -27,6 +27,18 @@ public class NpcTeam {
     private ArrayList<Integer> npcMembers;
     private ArrayList<NpcRole> roles;
 
+    public static NpcTeam initialNpcTeam(Integer id, NpcManager manager) {
+        NpcTeam team = new NpcTeam(id, manager);
+        team.addRole("Wheat farming", "Plant and harvest wheat.");
+        team.addRole("Woodcutting", "Cut down trees and plant saplings.");
+        team.addRole("Fishing", "Fish for fish and other items.");
+        team.addRole("Combat", "Fight mobs and players.");
+        team.addRole("Cooking", "Cook food.");
+        team.addRole("Sorting", "Sort items into the right chests.");
+        team.addRole("Animal husbandry", "Feed and breed animals.");
+        return team;
+    }
+
     public NpcTeam(Integer id, NpcManager manager) {
         this.id = id;
         this.manager = manager;
@@ -91,7 +103,12 @@ public class NpcTeam {
 
     @Override
     public int hashCode() {
-        return name.hashCode() ^ owners.hashCode() ^ npcMembers.hashCode() ^ roles.hashCode();
+        int hash = 0;
+        hash ^= name == null ? 0 : name.hashCode();
+        hash ^= owners == null ? 0 : owners.hashCode();
+        hash ^= npcMembers == null ? 0 : npcMembers.hashCode();
+        hash ^= roles == null ? 0 : roles.hashCode();
+        return hash;
     }
 
     public void setDirty() {

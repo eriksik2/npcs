@@ -1,5 +1,7 @@
 package com.example.examplemod.widgets;
 
+import java.util.function.Consumer;
+
 import com.example.examplemod.npc.role.NpcRole;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -13,11 +15,14 @@ public class RoleWidget extends ModWidget {
 
     private PopupManagerWidget popupManager;
 
-    public RoleWidget(ModWidget parent, PopupManagerWidget popupManager, NpcRole role) {
+    private Consumer<NpcRole> onClick = (role) -> {};
+
+    public RoleWidget(ModWidget parent, PopupManagerWidget popupManager, NpcRole role, Consumer<NpcRole> onClick) {
         super(parent);
         this.font = Minecraft.getInstance().font;
         this.role = role;
         this.popupManager = popupManager;
+        this.onClick = onClick;
         setHeight(font.lineHeight);
     }
 
@@ -48,18 +53,7 @@ public class RoleWidget extends ModWidget {
     @Override
     public boolean onMousePressed(double mouseX, double mouseY, int button) {
         if(!isMouseOver(mouseX, mouseY)) return false;
-        popupManager.push(new ModWidget(this) {
-            @Override
-            public void onInit() {
-
-                new TextWidget(this, "Hello world!");
-            }
-
-            @Override
-            public void onRelayoutPost() {
-                this.layoutShrinkwrapChildren();
-            }
-        });
+        onClick.accept(role);
         return false;
     }
     

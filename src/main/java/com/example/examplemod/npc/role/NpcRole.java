@@ -57,7 +57,10 @@ public class NpcRole {
 
     @Override
     public int hashCode() {
-        return name.hashCode() ^ description.hashCode();
+        int hash = 0;
+        hash ^= name == null ? 0 : name.hashCode();
+        hash ^= description == null ? 0 : description.hashCode();
+        return hash;
     }
 
     public Integer getId() {

@@ -276,7 +276,9 @@ public class NpcInteractScreen extends AbstractContainerScreen<NpcInteractMenu> 
                 displayText = "No, I'm on my own.";
             } else {
                 npcTeamBroker.get(npcData.teamId, (team) -> {
-                    displayText = "Yes, I'm with " + team.getName();
+                    String teamName = team.getName();
+                    teamName = teamName.substring(0, 1).toLowerCase() + teamName.substring(1);
+                    displayText = "Yes, I'm with " + teamName;
                 });
                 //displayText = "Yes, I'm with group " + npcData.teamId;
             }

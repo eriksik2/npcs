@@ -91,7 +91,12 @@ public class NpcData {
 
     @Override
     public int hashCode() {
-        return gender.hashCode() ^ name.hashCode() ^ teamId.hashCode() ^ npcId;
+        int hash = 0;
+        hash ^= gender == null ? 0 : gender.hashCode();
+        hash ^= name == null ? 0 : name.hashCode();
+        hash ^= teamId == null ? 0 : teamId.hashCode();
+        hash ^= npcId;
+        return hash;
     }
 
     public boolean isInitialized() {

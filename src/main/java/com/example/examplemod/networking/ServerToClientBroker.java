@@ -83,6 +83,9 @@ public abstract class ServerToClientBroker<TData> {
     public void unsafeWrite(Object data, FriendlyByteBuf buf) {
         toBytes((TData)data, buf);
     }
+    public int unsafeHashCode(Object data) {
+        return hashCode((TData)data);
+    }
 
     public abstract TData handle(NetworkEvent.Context ctx, Integer slot);
     public abstract int hashCode(TData data);

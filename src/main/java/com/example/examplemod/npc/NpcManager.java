@@ -201,7 +201,7 @@ public class NpcManager extends SavedData {
     public NpcTeam createTeam() {
         Integer id = nextTeamId;
         ++nextTeamId;
-        NpcTeam team = new NpcTeam(id, this);
+        NpcTeam team = NpcTeam.initialNpcTeam(id, this);
         teams.put(id, team);
         setDirty();
         return team;

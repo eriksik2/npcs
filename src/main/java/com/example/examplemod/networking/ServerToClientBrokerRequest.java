@@ -50,7 +50,7 @@ public class ServerToClientBrokerRequest implements Message {
                 if(data == null) {
                     return;
                 }
-                Integer hash = data.hashCode();
+                Integer hash = manager.unsafeHashCode(data);
                 if(dataHash != null && hash.equals(dataHash)) {
                     // Data is up to date on the client
                     ServerToClientBrokerResponse message = new ServerToClientBrokerResponse(slot, id);
