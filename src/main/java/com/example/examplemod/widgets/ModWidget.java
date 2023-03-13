@@ -34,6 +34,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     private boolean isInitialized = false;
     protected boolean layoutDirty = true;
     private ArrayList<ModWidget> removeQueue = new ArrayList<ModWidget>();
+    private ArrayList<Runnable> listenerRemoveQueue = new ArrayList<Runnable>();
 
     // Layouting properties
     private ArrayList<Runnable> layoutListeners = new ArrayList<Runnable>();
@@ -110,7 +111,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public void removeListener(Runnable listener) {
-        layoutListeners.remove(listener);
+        listenerRemoveQueue.add(listener);
     }
 
     public String getDebugString() {
@@ -250,11 +251,15 @@ public class ModWidget extends GuiComponent implements Renderable {
         for (ModWidget child : children) {
             child.render(stack, mouseX, mouseY, partialTicks);
         }
+        onRenderForeground(stack, mouseX, mouseY, partialTicks);
         stack.popPose();
         for (ModWidget child : removeQueue) {
             children.remove(child);
         }
         removeQueue.clear();
+        for (Runnable listener : listenerRemoveQueue) {
+            layoutListeners.remove(listener);
+        }
         if(deepLayoutDirty) {
             for(Runnable listener : layoutListeners) {
                 listener.run();
@@ -263,6 +268,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {}
+    public void onRenderForeground(PoseStack stack, int mouseX, int mouseY, float partialTicks) {}
 
     public <T extends ModWidget> T addChild(T child) {
         if(child.parent != null) child.parent.children.remove(child);
@@ -462,7 +468,7 @@ public class ModWidget extends GuiComponent implements Renderable {
         setLayoutDirty();
     }
 
-    private void refreshGlobalPosition() {
+    protected void refreshGlobalPosition() {
         if(parent == null) {
             globalX = getX();
             globalY = getY();

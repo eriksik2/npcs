@@ -14,6 +14,13 @@ public class ScrollableWidget extends ModWidget {
     }
 
     @Override
+    protected void registerDebugProperties() {
+        registerDebugProperty("ScrollTarget", () -> scrollTarget);
+        registerDebugProperty("Scroll", () -> scroll);
+        registerDebugProperty("innerY", () -> getInnerY());
+    }
+
+    @Override
     public boolean onMouseScrolled(double mouseX, double mouseY, double amount) {
         if(!isMouseOver(mouseX, mouseY)) return false;
         if(childrenHeight > getInnerHeight()) {
@@ -31,6 +38,10 @@ public class ScrollableWidget extends ModWidget {
                 scroll = scrollTarget;
             } else {
                 scroll += (scrollTarget - scroll) * 0.20f;
+            }
+            setLayoutDirty();
+            for(ModWidget child : children) {
+                child.refreshGlobalPosition();
             }
         }
         if(scrollTarget > childrenHeight - getInnerHeight()) scrollTarget = childrenHeight - getInnerHeight();

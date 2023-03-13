@@ -71,10 +71,12 @@ public class TextWidget extends ModWidget {
     @Override
     public void onRelayoutPost() {
         if(wrap) {
-            setHeight(getFont().wordWrapHeight(getText(), getWidth()));
+            int textHeight = getFont().wordWrapHeight(getText(), getWidth());
+            int lines = textHeight / getFont().lineHeight;
+            setHeight(textHeight - lines);
         } else {
             setWidth(getFont().width(getText()));
-            setHeight(getFont().lineHeight);
+            setHeight(getFont().lineHeight - 1);
         }
     }
 

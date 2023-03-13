@@ -1,30 +1,17 @@
 package com.example.examplemod.npc.team;
 
-import java.util.List;
-import java.util.UUID;
-
-import com.example.examplemod.networking.AddRoleToTeam;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.SetNpcTeamData;
-import com.example.examplemod.npc.role.NpcRole;
 import com.example.examplemod.setup.Registration;
-import com.example.examplemod.widgets.AddRoleWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.PopupManagerWidget;
-import com.example.examplemod.widgets.RoleWidget;
 import com.example.examplemod.widgets.RolesExplorerWidget;
 import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.TabsWidget;
 import com.example.examplemod.widgets.TextWidget;
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.logging.LogUtils;
-
-import ca.weblite.objc.Message;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CenteredStringWidget;
 import net.minecraft.client.gui.components.EditBox;

@@ -23,6 +23,10 @@ public class TabsWidget extends ModWidget {
         super(parent);
     }
 
+    public <T extends ModWidget> T addTab(String name, T tab) {
+        return addTab(Component.literal(name), tab);
+    }
+
     public <T extends ModWidget> T addTab(Component name, T tab) {
         tabName.add(name);
         if(tabs.size() == 0) tab.setActive(true);
