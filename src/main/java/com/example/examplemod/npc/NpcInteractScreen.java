@@ -89,6 +89,7 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
     @Override
     protected void registerWidgets(ModWidget root) {
 
+        // TODO - click name to open encyclopedia.
         npcName = new TextWidget(root, "");
         npcName.setPosition(leftPos + NAME_X, topPos + NAME_Y);
 
