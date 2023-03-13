@@ -92,6 +92,8 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
         npcName = new TextWidget(root, "");
         npcName.setPosition(leftPos + NAME_X, topPos + NAME_Y);
 
+        // TODO - make the track button text change to untrack if the npc is already tracked.
+        // TODO - use the track button graphic.
         trackButton = new ButtonWidget(root, "Track");
         trackButton.setWidth(46);
         trackButton.setPosition(leftPos + TRACK_BUTTON_X, topPos + TRACK_BUTTON_Y);
@@ -112,7 +114,7 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
         responseScrollable.setPosition(leftPos + RESPONSE_X, topPos + RESPONSE_Y);
         responseScrollable.setSize(RESPONSE_W, RESPONSE_H);
 
-        responseText = new TextWidget(responseScrollable, "lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet lorem ipsum dolor sit amet dolor sit amet ");
+        responseText = new TextWidget(responseScrollable, "");
         responseText.setPosition(0, 0);
         responseText.setWidth(responseScrollable.getWidth());
         responseText.setWrap(true);
