@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import com.example.examplemod.npc.NpcManager;
 import com.example.examplemod.npc.role.NpcRole;
+import com.example.examplemod.setup.Registration;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -120,6 +122,7 @@ public class NpcTeam {
     private ArrayList<NpcRole> roles;
     private NpcAssignedRoles npcAssignedRoles;
 
+
     public static NpcTeam initialNpcTeam(Integer id, NpcManager manager) {
         NpcTeam team = new NpcTeam(id, manager);
         team.addRole("Wheat farmer", "Plant and harvest wheat.");
@@ -164,6 +167,7 @@ public class NpcTeam {
         nextRoleId = data.getInt("nextRoleId");
 
         npcAssignedRoles = new NpcAssignedRoles(data.getList("npcAssignedRoles", Tag.TAG_COMPOUND));
+
     }
 
     public CompoundTag toCompoundTag() {
@@ -211,6 +215,7 @@ public class NpcTeam {
     }
 
     public void setDirty() {
+        Registration.TEAM_SUBSCRIPTION_BROKER.get().publish(id, this);
         manager.setDirty();
     }
 
@@ -226,7 +231,7 @@ public class NpcTeam {
     public NpcTeam setName(String newName) {
         name = newName;
         if(manager == null) throw new RuntimeException("NpcTeam.setName presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
@@ -241,14 +246,14 @@ public class NpcTeam {
     public NpcTeam addOwner(Player player) {
         owners.add(player.getUUID());
         if(manager == null) throw new RuntimeException("NpcTeam.addOwner presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
     public NpcTeam removeOwner(Player player) {
         owners.remove(player.getUUID());
         if(manager == null) throw new RuntimeException("NpcTeam.removeOwner presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
@@ -259,7 +264,7 @@ public class NpcTeam {
     public NpcTeam addNpcId(Integer npcId) {
         npcMembers.add(npcId);
         if(manager == null) throw new RuntimeException("NpcTeam.addNpcId presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
@@ -268,7 +273,7 @@ public class NpcTeam {
         if(!didRemove) return this;
         npcAssignedRoles.clearRoles(npcId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeNpcId presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
@@ -284,7 +289,7 @@ public class NpcTeam {
         boolean didAdd = npcAssignedRoles.addRole(npcId, roleId);
         if(!didAdd) return this;
         if(manager == null) throw new RuntimeException("NpcTeam.assignRole presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
@@ -292,7 +297,7 @@ public class NpcTeam {
         boolean didRemove = npcAssignedRoles.removeRole(npcId, roleId);
         if(!didRemove) return this;
         if(manager == null) throw new RuntimeException("NpcTeam.unassignRole presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 
@@ -301,7 +306,7 @@ public class NpcTeam {
         roles.add(role);
         nextRoleId++;
         if(manager == null) throw new RuntimeException("NpcTeam.addRole presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return role;
     }
 
@@ -310,7 +315,7 @@ public class NpcTeam {
         if(!didRemove) return this;
         npcAssignedRoles.removeRole(roleId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
-        manager.setDirty();
+        setDirty();
         return this;
     }
 }

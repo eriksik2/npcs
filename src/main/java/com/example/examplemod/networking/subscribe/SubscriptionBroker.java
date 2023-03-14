@@ -46,13 +46,13 @@ class ClientSideSubscriptions<TData> {
 
 class ServerSideSubscriptions<TData> {
     private TData data;
-    private HashSet<UUID> subscribers = new HashSet<>();
+    private HashSet<ServerPlayer> subscribers = new HashSet<>();
     
-    public boolean subscribe(UUID subscriberId) {
+    public boolean subscribe(ServerPlayer subscriberId) {
         return subscribers.add(subscriberId);
     }
     
-    public void unsubscribe(UUID subscriberId) {
+    public void unsubscribe(ServerPlayer subscriberId) {
         subscribers.remove(subscriberId);
     }
 
@@ -68,7 +68,7 @@ class ServerSideSubscriptions<TData> {
         return data;
     }
 
-    public Set<UUID> getSubscribers() {
+    public Set<ServerPlayer> getSubscribers() {
         return subscribers;
     }
 }
@@ -84,23 +84,29 @@ public abstract class SubscriptionBroker<TData> {
         this.id = id;
     }
 
-    public void serverRegisterSubscriber(UUID subscriberId, Integer dataId) {
+    public void serverRegisterSubscriber(ServerPlayer subscriber, Integer dataId) {
         ServerSideSubscriptions<TData> subscriptions = serverSideSubscriptions.get(dataId);
         if (subscriptions == null) {
             subscriptions = new ServerSideSubscriptions<TData>();
             serverSideSubscriptions.put(dataId, subscriptions);
         }
-        boolean didAdd = subscriptions.subscribe(subscriberId);
+        boolean didAdd = subscriptions.subscribe(subscriber);
         if (didAdd) {
-            ServerPlayer player = Minecraft.getInstance().level.getServer().getPlayerList().getPlayer(subscriberId);
-            SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, subscriptions.getData()), player);
+            TData data = subscriptions.getData();
+            if(data == null) {
+                subscriptions.setData(getData(subscriber, dataId));
+                data = subscriptions.getData();
+            }
+            if(data != null) {
+                SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, data), subscriber);
+            }
         }
     }
 
-    public void serverUnregisterSubscriber(UUID subscriberId, Integer dataId) {
+    public void serverUnregisterSubscriber(ServerPlayer subscriber, Integer dataId) {
         ServerSideSubscriptions<TData> subscriptions = serverSideSubscriptions.get(dataId);
         if (subscriptions == null) return;
-        subscriptions.unsubscribe(subscriberId);
+        subscriptions.unsubscribe(subscriber);
         if (subscriptions.isEmpty()) {
             serverSideSubscriptions.remove(dataId);
         }
@@ -143,8 +149,7 @@ public abstract class SubscriptionBroker<TData> {
         ServerSideSubscriptions<TData> subscriptions = serverSideSubscriptions.get(dataId);
         if(subscriptions == null) return;
         subscriptions.setData(data);
-        for(UUID playerId : subscriptions.getSubscribers()) {
-            ServerPlayer player = Minecraft.getInstance().level.getServer().getPlayerList().getPlayer(playerId);
+        for(ServerPlayer player : subscriptions.getSubscribers()) {
             SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, data), player);
         }
     }
@@ -153,6 +158,7 @@ public abstract class SubscriptionBroker<TData> {
         toBytes((TData)data, buf);
     }
 
+    public abstract TData getData(ServerPlayer player, Integer dataId);
     public abstract void toBytes(TData data, FriendlyByteBuf buf);
     public abstract TData fromBytes(FriendlyByteBuf buf);
 }

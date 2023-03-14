@@ -10,6 +10,7 @@ import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
 import com.example.examplemod.npc.team.TeamEditMenu;
+import com.example.examplemod.npc.team.TeamSubscriptionBroker;
 
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.ResourceLocation;
@@ -38,6 +39,7 @@ public class Registration {
     public static final RegistryObject<NpcTeamServerToClientBroker> NPC_TEAM_BROKER = MESSAGE_BROKERS.register("npc_team_broker", () -> NpcTeamServerToClientBroker.instance);
 
     public static final DeferredRegister<SubscriptionBroker<?>> SUBSCRIPTION_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "subscription_brokers"), ExampleMod.MODID);
+    public static final RegistryObject<TeamSubscriptionBroker> TEAM_SUBSCRIPTION_BROKER = SUBSCRIPTION_BROKERS.register("team_subscription_broker", () -> TeamSubscriptionBroker.INSTANCE);
 
     public static void init() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();

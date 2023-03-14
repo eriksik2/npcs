@@ -3,6 +3,7 @@ package com.example.examplemod.npc.team;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.SetNpcTeamData;
+import com.example.examplemod.networking.subscribe.ServerSubscription;
 import com.example.examplemod.setup.Registration;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.PopupManagerWidget;
@@ -32,16 +33,25 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
     private ModWidget debug;
 
-    private NpcTeamServerToClientBroker teamBroker = Registration.NPC_TEAM_BROKER.get();
+    private ServerSubscription<NpcTeam> teamSubscription;
     private NpcTeam team;
 
     public TeamEditScreen(TeamEditMenu container, Inventory inv, Component title) {
         super(container, inv, title);
 
+        teamSubscription = Registration.TEAM_SUBSCRIPTION_BROKER.get().subscribe(container.getTeamId());
+        teamSubscription.addListener(this::onNewTeam);
+
         this.font = Minecraft.getInstance().font;
         this.imageWidth = 176;
         this.imageHeight = 166;
         init();
+    }
+
+    @Override
+    public void onClose() {
+        teamSubscription.deinit();
+        super.onClose();
     }
 
     @Override
@@ -108,7 +118,8 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
         popupManager.init();
     }
 
-    private void onNewTeam() {
+    private void onNewTeam(NpcTeam newTeam) {
+        team = newTeam;
         if(team == null) return;
         if(rolesExplorer != null) rolesExplorer.setRolesList(team.getRoles());
         if(nameInput != null) nameInput.setValue(team.getName());
@@ -119,13 +130,6 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         if(popupManager != null) popupManager.tick();
         if(debug != null) debug.tick();
-        NpcTeam newTeam = teamBroker.get(menu.getTeamId());
-        int hc1 = team == null ? 0 : team.hashCode();
-        int hc2 = newTeam == null ? 0 : newTeam.hashCode();
-        if (hc1 != hc2) {
-            team = newTeam;
-            onNewTeam();
-        }
 
         this.renderBackground(stack);
         popupManager.render(stack, mouseX, mouseY, partialTicks);

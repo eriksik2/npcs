@@ -7,6 +7,7 @@ import com.example.examplemod.setup.Registration;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkEvent.Context;
@@ -39,8 +40,8 @@ public class UnsubscribeRequest implements Message {
             // Here we are Server side.
             Registration.SUBSCRIPTION_BROKERS.getEntries().stream().filter(e -> e.getId().equals(subscriptionBroker)).findFirst().ifPresent(e -> {
                 SubscriptionBroker<?> broker = e.get();
-                Player player = ctx.getSender();
-                broker.serverUnregisterSubscriber(player.getUUID(), dataId);
+                ServerPlayer player = (ServerPlayer)ctx.getSender();
+                broker.serverUnregisterSubscriber(player, dataId);
             });
         });
         return true;
