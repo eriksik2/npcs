@@ -24,6 +24,7 @@ public class TrackingOverlay {
         height = height - 40;
         Font font = gui.getFont();
         List<NpcTrackingData> trackedNpcs = ClientTrackedObjects.getTrackedNpcs();
+        if(trackedNpcs == null) return;
         //Matrix4f matrix = renderer.getProjectionMatrix(0);
         Matrix3f matrix = RenderSystem.getInverseViewRotationMatrix();
         Player player = Minecraft.getInstance().player;

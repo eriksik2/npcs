@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class TeamSubscriptionBroker extends SubscriptionBroker<NpcTeam> {
 
-    public static final ResourceLocation ID = new ResourceLocation(ExampleMod.MODID, "team_subscription_broker");
     public static final TeamSubscriptionBroker INSTANCE = new TeamSubscriptionBroker();
 
     public TeamSubscriptionBroker() {

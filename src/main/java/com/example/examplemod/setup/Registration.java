@@ -6,6 +6,7 @@ import com.example.examplemod.networking.ServerToClientBroker;
 import com.example.examplemod.networking.subscribe.SubscriptionBroker;
 import com.example.examplemod.networking.NpcDataServerToClientBroker;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
+import com.example.examplemod.npc.NpcDataSubscriptionBroker;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
@@ -40,6 +41,7 @@ public class Registration {
 
     public static final DeferredRegister<SubscriptionBroker<?>> SUBSCRIPTION_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "subscription_brokers"), ExampleMod.MODID);
     public static final RegistryObject<TeamSubscriptionBroker> TEAM_SUBSCRIPTION_BROKER = SUBSCRIPTION_BROKERS.register("team_subscription_broker", () -> TeamSubscriptionBroker.INSTANCE);
+    public static final RegistryObject<NpcDataSubscriptionBroker> NPC_DATA_SUBSCRIPTION_BROKER = SUBSCRIPTION_BROKERS.register("npc_data_subscription_broker", () -> NpcDataSubscriptionBroker.INSTANCE);
 
     public static void init() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();

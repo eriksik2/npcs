@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.npc.role.RemoveTeamRoleMsg;
+import com.example.examplemod.npc.role.ToggleNpcHasRoleMsg;
 import com.mojang.realmsclient.client.Request.Get;
 
 import ca.weblite.objc.Client;
@@ -92,6 +93,12 @@ public class Messages {
                 .decoder(RemoveTeamRoleMsg::new)
                 .encoder(RemoveTeamRoleMsg::toBytes)
                 .consumerMainThread(RemoveTeamRoleMsg::handle)
+                .add();
+
+        net.messageBuilder(ToggleNpcHasRoleMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ToggleNpcHasRoleMsg::new)
+                .encoder(ToggleNpcHasRoleMsg::toBytes)
+                .consumerMainThread(ToggleNpcHasRoleMsg::handle)
                 .add();
         
 

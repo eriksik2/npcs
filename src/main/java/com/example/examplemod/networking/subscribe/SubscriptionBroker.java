@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
-import com.example.examplemod.networking.Messages;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -90,16 +86,14 @@ public abstract class SubscriptionBroker<TData> {
             subscriptions = new ServerSideSubscriptions<TData>();
             serverSideSubscriptions.put(dataId, subscriptions);
         }
-        boolean didAdd = subscriptions.subscribe(subscriber);
-        if (didAdd) {
-            TData data = subscriptions.getData();
-            if(data == null) {
-                subscriptions.setData(getData(subscriber, dataId));
-                data = subscriptions.getData();
-            }
-            if(data != null) {
-                SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, data), subscriber);
-            }
+        subscriptions.subscribe(subscriber);
+        TData data = subscriptions.getData();
+        if(data == null) {
+            subscriptions.setData(getData(subscriber, dataId));
+            data = subscriptions.getData();
+        }
+        if(data != null) {
+            SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, data), subscriber);
         }
     }
 
@@ -118,8 +112,8 @@ public abstract class SubscriptionBroker<TData> {
         if (subscriptions == null) {
             subscriptions = new ClientSideSubscriptions<TData>(this, dataId);
             clientSideSubscriptions.put(dataId, subscriptions);
-            SubscriptionMessages.sendToServer(new SubscribeRequest(dataId, id));
         }
+        SubscriptionMessages.sendToServer(new SubscribeRequest(dataId, id));
         return subscriptions.subscribe();
     }
     

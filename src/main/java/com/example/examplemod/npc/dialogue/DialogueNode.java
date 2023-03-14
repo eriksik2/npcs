@@ -2,16 +2,12 @@ package com.example.examplemod.npc.dialogue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.logging.log4j.util.TriConsumer;
 
-import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 
-import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
+import cpw.mods.jarhandling.SecureJar.Provider;
 
 interface DialogueNodeBuilder<TData, TTransitionData> {
     DialogueNode<TData, TTransitionData> build();
@@ -35,8 +31,6 @@ public interface DialogueNode<TData, TTransitionData> extends DialogueNodeBuilde
     }
 
     static class Builder<TData, TTransitionData> implements DialogueNodeBuilder<TData, TTransitionData> {
-        private ArrayList<TTransitionData> deferredTransitionsData = new ArrayList<>();
-        private ArrayList<Builder<TData, TTransitionData>> deferredTransitions = new ArrayList<>();
         private ArrayList<DialogueTransition<TData, TTransitionData>> transitions = new ArrayList<>();
         private Supplier<TData> getData = () -> null;
         private TriConsumer<TData, TTransitionData, TData> onEnter = (from, transition, to) -> {};
@@ -48,14 +42,18 @@ public interface DialogueNode<TData, TTransitionData> extends DialogueNodeBuilde
         public Builder() {
         }
 
-        public Builder<TData, TTransitionData> withTransition(TTransitionData data, DialogueNode<TData, TTransitionData> node) {
+        public Builder<TData, TTransitionData> withTransition(TTransitionData data, DialogueNodeBuilder<TData, TTransitionData> node) {
             transitions.add(new DialogueTransition<TData,TTransitionData>(data, node));
             return this;
         }
 
-        public Builder<TData, TTransitionData> withTransition(TTransitionData data, Builder<TData, TTransitionData> builder) {
-            deferredTransitionsData.add(data);
-            deferredTransitions.add(builder);
+        public Builder<TData, TTransitionData> withTransition(TTransitionData data, Supplier<DialogueNodeBuilder<TData, TTransitionData>> builder) {
+            transitions.add(new DialogueTransition<TData,TTransitionData>(data, new DialogueNodeBuilder<TData, TTransitionData>() {
+                @Override
+                public DialogueNode<TData,TTransitionData> build() {
+                    return builder.get().build();
+                }
+            }));
             return this;
         }
 
@@ -144,11 +142,6 @@ public interface DialogueNode<TData, TTransitionData> extends DialogueNodeBuilde
                     return transitions;
                 }
             };
-            for(int i = 0; i < deferredTransitions.size(); i++) {
-                var data = deferredTransitionsData.get(i);
-                var builder = deferredTransitions.get(i);
-                transitions.add(new DialogueTransition<TData,TTransitionData>(data, builder.build()));
-            }
             return builtNode;
         }
     }

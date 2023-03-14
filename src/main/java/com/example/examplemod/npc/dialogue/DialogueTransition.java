@@ -2,16 +2,16 @@ package com.example.examplemod.npc.dialogue;
 
 public class DialogueTransition<TData, TTransitionData> {
     
-    private DialogueNode<TData, TTransitionData> to;
+    private DialogueNodeBuilder<TData, TTransitionData> to;
     private TTransitionData data;
     
-    public DialogueTransition(TTransitionData data, DialogueNode<TData, TTransitionData> to) {
+    public DialogueTransition(TTransitionData data, DialogueNodeBuilder<TData, TTransitionData> to) {
         this.to = to;
         this.data = data;
     }
     
     public DialogueNode<TData, TTransitionData> getTo() {
-        return to;
+        return to.build();
     }
     
     public TTransitionData getData() {

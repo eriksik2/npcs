@@ -1,9 +1,12 @@
 package com.example.examplemod.npc.role;
 
 import com.example.examplemod.networking.Messages;
+import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.team.NpcTeam;
 import com.example.examplemod.widgets.ButtonWidget;
 import com.example.examplemod.widgets.ModWidget;
+import com.example.examplemod.widgets.NpcPreviewWidget;
+import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.ScrollableWidget;
 import com.example.examplemod.widgets.TextWidget;
 
@@ -12,6 +15,9 @@ public class RoleEditorWidget extends ModWidget {
     private ScrollableWidget scrollable;
     private TextWidget name;
     private TextWidget description;
+
+    private TextWidget npcListLabel;
+    private ScrollableListWidget npcList;
 
     private ButtonWidget saveButton;
     private ButtonWidget removeButton;
@@ -30,6 +36,10 @@ public class RoleEditorWidget extends ModWidget {
         name = new TextWidget(scrollable, "Name");
         description = new TextWidget(scrollable, "Description");
         description.setWrap(true);
+
+        npcListLabel = new TextWidget(scrollable, "Workers");
+        npcList = new ScrollableListWidget(scrollable);
+        npcList.setGap(2);
 
         saveButton = new ButtonWidget(this, "Save");
         saveButton.setOnClick(() -> {
@@ -58,6 +68,13 @@ public class RoleEditorWidget extends ModWidget {
         name.layoutFillX();
         description.layoutFillX();
 
+        npcListLabel.setY(description.getY() + description.getHeight() + 5);
+        npcListLabel.layoutFillX();
+        npcList.setWidth(getInnerWidth()*4/5);
+        npcList.setHeight(50);
+        npcList.layoutCenterX();
+        npcList.setY(npcListLabel.getY() + npcListLabel.getHeight() + 5);
+
         saveButton.setY(scrollable.getHeight());
         saveButton.setX(getInnerWidth()/2 + 5);
         saveButton.setWidth(getInnerWidth()/2 - 5);
@@ -77,6 +94,20 @@ public class RoleEditorWidget extends ModWidget {
     public void setRole(NpcTeam team, NpcRole role) {
         this.team = team;
         this.role = role;
+
+        npcList.clearChildren();
+        if(role != null) {
+            for(Integer npc : team.getNpcsOf(role.getId())) {
+                NpcPreviewWidget widget = new NpcPreviewWidget(npcList) {
+                    @Override
+                    public void onRelayoutPre() {
+                        super.onRelayoutPre();
+                        //layoutFillX();
+                    }
+                };
+                widget.setNpcId(npc);
+            }
+        }
         setLayoutDirty();
     }
     

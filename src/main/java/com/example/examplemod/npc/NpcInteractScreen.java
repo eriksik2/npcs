@@ -1,25 +1,21 @@
 package com.example.examplemod.npc;
 
 import java.util.ArrayList;
-import java.util.List;
-
 import org.joml.Quaternionf;
 
 import com.example.examplemod.ExampleMod;
-import com.example.examplemod.networking.AddNpcToPlayerTeam;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcDataServerToClientBroker;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
-import com.example.examplemod.networking.OpenEncyclopedia;
 import com.example.examplemod.networking.ToggleTrackingNpc;
 import com.example.examplemod.npc.dialogue.DialogueTransition;
 import com.example.examplemod.npc.dialogue.NpcDialogue;
 import com.example.examplemod.npc.team.NpcTeam;
 import com.example.examplemod.setup.Registration;
-import com.example.examplemod.tracking.ClientTrackedObjects;
 import com.example.examplemod.widgets.ButtonWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.ModWidgetContainerScreen;
+import com.example.examplemod.widgets.NpcPreviewWidget;
 import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.ScrollableWidget;
 import com.example.examplemod.widgets.TextWidget;
@@ -28,16 +24,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.client.gui.components.Button;
 
 public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu> {
 
@@ -71,7 +63,7 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
     private NpcTeam teamData;
 
     
-    private TextWidget npcName;
+    private NpcPreviewWidget npcName;
     private ButtonWidget trackButton;
     private ScrollableListWidget dialogueList;
     private ScrollableWidget responseScrollable;
@@ -89,9 +81,9 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
     @Override
     protected void registerWidgets(ModWidget root) {
 
-        // TODO - click name to open encyclopedia.
-        npcName = new TextWidget(root, "");
+        npcName = new NpcPreviewWidget(root);
         npcName.setPosition(leftPos + NAME_X, topPos + NAME_Y);
+        npcName.setShowFace(false);
 
         // TODO - make the track button text change to untrack if the npc is already tracked.
         // TODO - use the track button graphic.
@@ -136,11 +128,12 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
 
     @Override
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        npcName.setColor(0x000000);
 
         var transitions = new ArrayList<DialogueTransition<String, String>>(npcDialogue.getTransitions());
-        if(dialogueTransitions == null
-        || transitions.stream().map(a -> a.getData()).reduce((a, b) -> a + b).orElse("")
-        != dialogueTransitions.stream().map(a -> a.getData()).reduce((a, b) -> a + b).orElse("")) {
+        var thc = transitions.stream().map(a -> a.hashCode()).reduce((a, b) -> a ^ b).orElse(0);
+        var dhc = dialogueTransitions == null ? 0 : dialogueTransitions.stream().map(a -> a.hashCode()).reduce((a, b) -> a ^ b).orElse(0);
+        if(dialogueTransitions == null || dhc != thc) {
             dialogueTransitions = transitions;
             dialogueList.clearChildren();
             for(var tran : dialogueTransitions) {
@@ -159,7 +152,7 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
             npcData = newNpcData;
             npcDialogue.setNpcData(npcData);
             if(npcData != null) {
-                npcName.setText(npcData.name);
+                npcName.setNpcId(npcData.npcId);
             }
         }
 

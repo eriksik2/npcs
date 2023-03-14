@@ -1,8 +1,12 @@
 package com.example.examplemod.npc.dialogue;
 
+import java.util.List;
+
 import com.example.examplemod.networking.AddNpcToPlayerTeam;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.NpcData;
+import com.example.examplemod.npc.role.NpcRole;
+import com.example.examplemod.npc.role.ToggleNpcHasRoleMsg;
 import com.example.examplemod.npc.team.NpcTeam;
 
 public class NpcDialogue extends DialogueGraph<String, String> {
@@ -69,19 +73,62 @@ public class NpcDialogue extends DialogueGraph<String, String> {
             })
                 .canEnterIf(() -> isOnTeam)
                 .withTransition("Oh, okay.", root)
-                .withTransition("Assign him a job...",
-                    createNode("")
-                        .withTransition("Farmer",
-                            createNode("I'll be a farmer!")
-                                .onEnter(() -> task = "farmer")
-                                .withTransition("Great!", root)
-                        )
-                        .withTransition("Woodcutter",
-                            createNode("I'll be a woodcutter!")
-                                .onEnter((from, tran, to) -> task = "woodcutter")
-                                .withTransition("Great!", root)
-                        )
-                )
+        );
+
+        root.withTransition("Assign role...", 
+            () -> {
+                var tasksNode = createNode("")
+                    .canEnterIf(() -> {
+                        if(npcData == null) return false;
+                        if(teamData == null) return false;
+                        if(npcData.teamId != teamData.getId()) return false;
+                        List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                        if(hasRoles.size() == teamData.getRoles().size()) return false;
+                        return true;
+                    });
+                if(teamData == null) return tasksNode;
+                List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                for(NpcRole role : teamData.getRoles()) {
+                    if(hasRoles.contains(role.getId())) continue;
+                    tasksNode.withTransition(role.getName(), 
+                        createNode("Okay, I'll do " + role.getName() + ".")
+                            .onEnter(() -> {
+                                Messages.sendToServer(new ToggleNpcHasRoleMsg(teamData.getId(), role.getId(), npcData.npcId));
+                            })
+                            .withTransition("Great!", root)
+                    );
+                }
+                tasksNode.withTransition("Nevermind.", root);
+                return tasksNode;
+            }
+        );
+
+        root.withTransition("Unassign role...", 
+            () -> {
+                var tasksNode = createNode("")
+                    .canEnterIf(() -> {
+                        if(npcData == null) return false;
+                        if(teamData == null) return false;
+                        if(npcData.teamId != teamData.getId()) return false;
+                        List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                        if(hasRoles.size() == 0) return false;
+                        return true;
+                    });
+                if(teamData == null) return tasksNode;
+                List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                for(NpcRole role : teamData.getRoles()) {
+                    if(!hasRoles.contains(role.getId())) continue;
+                    tasksNode.withTransition(role.getName(), 
+                        createNode("Okay, I wont do " + role.getName() + " anymore.")
+                            .onEnter(() -> {
+                                Messages.sendToServer(new ToggleNpcHasRoleMsg(teamData.getId(), role.getId(), npcData.npcId));
+                            })
+                            .withTransition("Great!", root)
+                    );
+                }
+                tasksNode.withTransition("Nevermind.", root);
+                return tasksNode;
+            }
         );
 
         return root;

@@ -1,7 +1,6 @@
 package com.example.examplemod.npc.team;
 
 import com.example.examplemod.networking.Messages;
-import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.SetNpcTeamData;
 import com.example.examplemod.networking.subscribe.ServerSubscription;
 import com.example.examplemod.npc.role.RolesExplorerWidget;
@@ -51,6 +50,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     @Override
     public void onClose() {
         teamSubscription.deinit();
+        popupManager.deinit();
         super.onClose();
     }
 

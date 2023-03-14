@@ -17,6 +17,7 @@ public class TextWidget extends ModWidget {
         super(parent);
         this.text = text;
         this.font = Minecraft.getInstance().font;
+        this.setHeight(font.lineHeight);
     }
 
     public TextWidget(ModWidget parent, String text) {
@@ -46,9 +47,21 @@ public class TextWidget extends ModWidget {
     }
 
     @Override
-    public void setWidth(int width) {
-        super.setWidth(width);
-        setHeight(getFont().wordWrapHeight(getText(), getWidth()));
+    public int getHeight() {
+        if(getWrap()) {
+            return getFont().wordWrapHeight(getText(), getWidth());
+        } else {
+            return getFont().lineHeight;
+        }
+    }
+
+    @Override
+    public int getWidth() {
+        if(getWrap()) {
+            return super.getWidth();
+        } else {
+            return getFont().width(getText());
+        }
     }
 
     public void setWrap(boolean wrap) {
@@ -70,14 +83,14 @@ public class TextWidget extends ModWidget {
 
     @Override
     public void onRelayoutPost() {
-        if(wrap) {
-            int textHeight = getFont().wordWrapHeight(getText(), getWidth());
-            int lines = textHeight / getFont().lineHeight;
-            setHeight(textHeight - lines);
-        } else {
-            setWidth(getFont().width(getText()));
-            setHeight(getFont().lineHeight - 1);
-        }
+        //if(wrap) {
+        //    int textHeight = getFont().wordWrapHeight(getText(), getWidth());
+        //    int lines = textHeight / getFont().lineHeight;
+        //    setHeight(textHeight - lines);
+        //} else {
+        //    setWidth(getFont().width(getText()));
+        //    setHeight(getFont().lineHeight - 1);
+        //}
     }
 
     @Override

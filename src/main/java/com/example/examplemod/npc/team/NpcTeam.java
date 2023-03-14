@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcManager;
 import com.example.examplemod.npc.role.NpcRole;
 import com.example.examplemod.setup.Registration;
@@ -21,6 +23,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
 class NpcAssignedRoles {
+    // npcId -> roles
     private HashMap<Integer, HashSet<Integer>> npcRolesMap = new HashMap<>();
 
     public NpcAssignedRoles() {
@@ -66,6 +69,16 @@ class NpcAssignedRoles {
         HashSet<Integer> roles = npcRolesMap.get(npcId);
         if(roles == null) return new ArrayList<>();
         return new ArrayList<>(roles);
+    }
+
+    public List<Integer> getNpcs(Integer roleId) {
+        List<Integer> npcs = new ArrayList<>();
+        for(Integer npcId : npcRolesMap.keySet()) {
+            HashSet<Integer> roles = npcRolesMap.get(npcId);
+            if(roles == null) continue;
+            if(roles.contains(roleId)) npcs.add(npcId);
+        }
+        return npcs;
     }
 
     public boolean addRole(Integer npcId, Integer roleId) {
@@ -283,6 +296,10 @@ public class NpcTeam {
 
     public List<Integer> getRolesOf(Integer npcId) {
         return npcAssignedRoles.getRoles(npcId);
+    }
+
+    public List<Integer> getNpcsOf(Integer roleId) {
+        return npcAssignedRoles.getNpcs(roleId);
     }
 
     public NpcTeam assignRole(Integer npcId, Integer roleId) {
