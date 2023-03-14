@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcManager;
+import com.example.examplemod.npc.area.NpcArea;
 import com.example.examplemod.npc.role.NpcRole;
 import com.example.examplemod.setup.Registration;
 
@@ -127,6 +128,7 @@ public class NpcTeam {
     private NpcManager manager;
     private Integer id;
     private int nextRoleId = 0;
+    private int nextAreaId = 0;
 
     
     private String name;
@@ -134,6 +136,7 @@ public class NpcTeam {
     private ArrayList<Integer> npcMembers;
     private ArrayList<NpcRole> roles;
     private NpcAssignedRoles npcAssignedRoles;
+    private ArrayList<NpcArea> areas;
 
 
     public static NpcTeam initialNpcTeam(Integer id, NpcManager manager) {
@@ -155,6 +158,7 @@ public class NpcTeam {
         npcMembers = new ArrayList<Integer>();
         roles = new ArrayList<NpcRole>();
         npcAssignedRoles = new NpcAssignedRoles();
+        areas = new ArrayList<NpcArea>();
     }
 
     public NpcTeam(CompoundTag data, NpcManager manager) {
@@ -181,6 +185,12 @@ public class NpcTeam {
 
         npcAssignedRoles = new NpcAssignedRoles(data.getList("npcAssignedRoles", Tag.TAG_COMPOUND));
 
+        areas = new ArrayList<NpcArea>();
+        for(Tag value : data.getList("areas", Tag.TAG_COMPOUND)) {
+            areas.add(new NpcArea((CompoundTag)value, this));
+        }
+        nextAreaId = data.getInt("nextAreaId");
+
     }
 
     public CompoundTag toCompoundTag() {
@@ -204,6 +214,13 @@ public class NpcTeam {
         data.putInt("nextRoleId", nextRoleId);
 
         data.put("npcAssignedRoles", npcAssignedRoles.toListTag());
+
+        ListTag areasTag = new ListTag();
+        for(NpcArea area : areas) {
+            areasTag.add(area.toCompoundTag());
+        }
+        data.put("areas", areasTag);
+        data.putInt("nextAreaId", nextAreaId);
 
         return data;
     }
@@ -332,6 +349,27 @@ public class NpcTeam {
         if(!didRemove) return this;
         npcAssignedRoles.removeRole(roleId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
+        setDirty();
+        return this;
+    }
+
+    public List<NpcArea> getAreas() {
+        return areas;
+    }
+
+    public NpcArea addArea() {
+        NpcArea area = new NpcArea(this, nextAreaId);
+        areas.add(area);
+        nextAreaId++;
+        if(manager == null) throw new RuntimeException("NpcTeam.addArea presumably called on the client.");
+        setDirty();
+        return area;
+    }
+
+    public NpcTeam removeArea(int areaId) {
+        boolean didRemove = areas.removeIf(area -> area.getId() == areaId);
+        if(!didRemove) return this;
+        if(manager == null) throw new RuntimeException("NpcTeam.removeArea presumably called on the client.");
         setDirty();
         return this;
     }

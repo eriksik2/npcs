@@ -1,4 +1,4 @@
-package com.example.examplemod.tracking;
+package com.example.examplemod.npc.area;
 
 import java.util.List;
 
@@ -8,6 +8,9 @@ import org.joml.Quaternionf;
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcModel;
+import com.example.examplemod.tracking.PlayerTrackedObjects;
+import com.example.examplemod.tracking.PlayerTrackingProvider;
+import com.example.examplemod.tracking.TrackingManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -21,19 +24,19 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 
-public class TrackingEvents {
+public class EditingAreaEvents {
     
     public static void setup() {
         IEventBus bus = MinecraftForge.EVENT_BUS;
-        bus.addGenericListener(Entity.class, TrackingEvents::onAttachCapabilitiesPlayer);
-        bus.addListener(TrackingEvents::onPlayerCloned);
-        bus.addListener(TrackingEvents::onRegisterCapabilities);
-        bus.addListener(TrackingEvents::onWorldTick);
+        bus.addGenericListener(Entity.class, EditingAreaEvents::onAttachCapabilitiesPlayer);
+        bus.addListener(EditingAreaEvents::onPlayerCloned);
+        bus.addListener(EditingAreaEvents::onRegisterCapabilities);
+        bus.addListener(EditingAreaEvents::onWorldTick);
     }
 
     public static void clientSetup() {
         IEventBus bus = MinecraftForge.EVENT_BUS;
-        //bus.addListener(TrackingEvents::onRenderLiving);
+        //bus.addListener(EditingAreaEvents::onRenderLiving);
     }
 
     public static void onWorldTick(TickEvent.LevelTickEvent event) {
@@ -53,9 +56,9 @@ public class TrackingEvents {
     // when a new player arrives so that we can attach our capability here
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event){
         if (event.getObject() instanceof Player) {
-            if (!event.getObject().getCapability(PlayerTrackingProvider.TRACKED_OBJECTS).isPresent()) {
+            if (!event.getObject().getCapability(EditingAreaProvider.EDITING_AREA).isPresent()) {
                 // The player does not already have this capability so we need to add the capability provider here
-                event.addCapability(new ResourceLocation(ExampleMod.MODID, "playertracking"), new PlayerTrackingProvider());
+                event.addCapability(new ResourceLocation(ExampleMod.MODID, "editingarea"), new EditingAreaProvider());
             }
         }
     }
@@ -65,8 +68,8 @@ public class TrackingEvents {
     public static void onPlayerCloned(PlayerEvent.Clone event) {
         if (event.isWasDeath()) {
             // We need to copyFrom the capabilities
-            event.getOriginal().getCapability(PlayerTrackingProvider.TRACKED_OBJECTS).ifPresent(oldStore -> {
-                event.getEntity().getCapability(PlayerTrackingProvider.TRACKED_OBJECTS).ifPresent(newStore -> {
+            event.getOriginal().getCapability(EditingAreaProvider.EDITING_AREA).ifPresent(oldStore -> {
+                event.getEntity().getCapability(EditingAreaProvider.EDITING_AREA).ifPresent(newStore -> {
                     newStore.copyFrom(oldStore);
                 });
             });
@@ -75,6 +78,6 @@ public class TrackingEvents {
 
     // Finally we need to register our capability in a RegisterCapabilitiesEvent
     public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(PlayerTrackedObjects.class);
+        event.register(EditingArea.class);
     }
 }

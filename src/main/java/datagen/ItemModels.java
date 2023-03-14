@@ -17,5 +17,7 @@ public class ItemModels extends ItemModelProvider {
     protected void registerModels() {
         withExistingParent(Registration.NPC_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
         //withExistingParent(Registration.MYSTERIOUS_ORE_OVERWORLD_ITEM.getId().getPath(), modLoc("block/mysterious_ore_overworld"));
+
+        singleTexture(Registration.AREA_DESIGNATOR.getId().getPath(), mcLoc("item/generated"), "layer0", modLoc("item/area_designator"));
     }
 }

@@ -1,8 +1,7 @@
-package com.example.examplemod.tracking;
+package com.example.examplemod.npc.area;
 
 import javax.annotation.Nonnull;
-
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -13,41 +12,37 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
-public class PlayerTrackingProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+public class EditingAreaProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+    
+    public static Capability<EditingArea> EDITING_AREA = CapabilityManager.get(new CapabilityToken<>(){});
+    private final LazyOptional<EditingArea> opt = LazyOptional.of(this::getEditingArea);
 
-    public static Capability<PlayerTrackedObjects> TRACKED_OBJECTS = CapabilityManager.get(new CapabilityToken<>(){});
-
-    private PlayerTrackedObjects trackedObjects = null;
-
-    private final LazyOptional<PlayerTrackedObjects> opt = LazyOptional.of(this::getTrackedObjects);
-
-    public PlayerTrackingProvider() {
-    }
+    private EditingArea editingArea = null;
 
     @Nonnull
-    private PlayerTrackedObjects getTrackedObjects() {
-        if (trackedObjects == null) {
-            trackedObjects = new PlayerTrackedObjects();
+    private EditingArea getEditingArea() {
+        if (editingArea == null) {
+            editingArea = new EditingArea();
         }
-        return trackedObjects;
+        return editingArea;
     }
 
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.put("trackedObjects", getTrackedObjects().serializeNBT());
+        tag.put("trackedObjects", getEditingArea().serializeNBT());
         return tag;
     }
 
     @Override
     public void deserializeNBT(CompoundTag tag) {
-        getTrackedObjects().deserializeNBT(tag.getCompound("trackedObjects"));
+        getEditingArea().deserializeNBT(tag.getCompound("trackedObjects"));
     }
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap) {
-        if (cap == TRACKED_OBJECTS) {
+        if (cap == EDITING_AREA) {
             return opt.cast();
         }
         return LazyOptional.empty();
@@ -58,5 +53,4 @@ public class PlayerTrackingProvider implements ICapabilityProvider, INBTSerializ
     public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
         return getCapability(cap);
     }
-    
 }

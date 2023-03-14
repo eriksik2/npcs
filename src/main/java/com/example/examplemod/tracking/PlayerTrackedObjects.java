@@ -4,14 +4,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import com.example.examplemod.npc.NpcEntity;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class PlayerTrackedObjects implements INBTSerializable<CompoundTag> {

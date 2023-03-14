@@ -1,5 +1,6 @@
 package com.example.examplemod;
 
+import com.example.examplemod.npc.area.EditingAreaEvents;
 import com.example.examplemod.setup.ClientSetup;
 import com.example.examplemod.setup.ModSetup;
 import com.example.examplemod.setup.Registration;
@@ -21,6 +22,7 @@ public class ExampleMod
     {
         ModSetup.setup();
         TrackingEvents.setup();
+        EditingAreaEvents.setup();
         Registration.init();
         IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();
 

@@ -10,6 +10,7 @@ import com.example.examplemod.npc.NpcDataSubscriptionBroker;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
+import com.example.examplemod.npc.area.AreaDesignatorItem;
 import com.example.examplemod.npc.team.TeamEditMenu;
 import com.example.examplemod.npc.team.TeamSubscriptionBroker;
 
@@ -61,7 +62,7 @@ public class Registration {
         .build("npc_entity")
     );
     public static final RegistryObject<Item> NPC_EGG = ITEMS.register("npc_egg", () -> new ForgeSpawnEggItem(NPC_ENTITY, 0xff0000, 0x00ff00, new Item.Properties()));
-
+    public static final RegistryObject<Item> AREA_DESIGNATOR = ITEMS.register("area_designator", () -> new AreaDesignatorItem());
 
     public static final RegistryObject<MenuType<NpcInteractMenu>> NPC_MENU = MENUS.register("npc_menu", () -> IForgeMenuType.create((windowId, inv, data) -> new NpcInteractMenu(windowId, data.readBlockPos(), inv, inv.player)));
     public static final RegistryObject<MenuType<EncyclopediaMenu>> ENCYCLOPEDIA_MENU = MENUS.register("encyclopedia_menu", () -> IForgeMenuType.create((windowId, inv, data) -> new EncyclopediaMenu(windowId, inv.player, null)));

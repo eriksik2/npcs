@@ -7,6 +7,7 @@ import com.example.examplemod.encyclopedia.EncyclopediaScreen;
 import com.example.examplemod.npc.NpcInteractScreen;
 import com.example.examplemod.npc.NpcModel;
 import com.example.examplemod.npc.NpcRenderer;
+import com.example.examplemod.npc.area.EditingAreaEvents;
 import com.example.examplemod.npc.team.TeamEditScreen;
 import com.example.examplemod.tracking.TrackingEvents;
 import com.example.examplemod.tracking.TrackingOverlay;
@@ -16,6 +17,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -37,11 +39,17 @@ public class ClientSetup {
     public static void setup() {
         IEventBus bus = MinecraftForge.EVENT_BUS;
         TrackingEvents.clientSetup();
+        EditingAreaEvents.clientSetup();
     }
 
     @SubscribeEvent
     public static void onRegisterGuiOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAbove(VanillaGuiOverlay.FOOD_LEVEL.id(), "trackingoverlay", TrackingOverlay.HUD_TRACKING);
+    }
+
+    @SubscribeEvent
+    public static void onRenderLevelStage(RenderLevelStageEvent event) {
+        
     }
 
     @SubscribeEvent
