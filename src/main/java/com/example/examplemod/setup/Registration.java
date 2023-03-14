@@ -3,6 +3,7 @@ package com.example.examplemod.setup;
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.encyclopedia.EncyclopediaMenu;
 import com.example.examplemod.networking.ServerToClientBroker;
+import com.example.examplemod.networking.subscribe.SubscriptionBroker;
 import com.example.examplemod.networking.NpcDataServerToClientBroker;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.npc.NpcEntity;
@@ -36,6 +37,8 @@ public class Registration {
     public static final RegistryObject<NpcDataServerToClientBroker> NPC_DATA_BROKER = MESSAGE_BROKERS.register("npc_data_broker", () -> NpcDataServerToClientBroker.instance);
     public static final RegistryObject<NpcTeamServerToClientBroker> NPC_TEAM_BROKER = MESSAGE_BROKERS.register("npc_team_broker", () -> NpcTeamServerToClientBroker.instance);
 
+    public static final DeferredRegister<SubscriptionBroker<?>> SUBSCRIPTION_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "subscription_brokers"), ExampleMod.MODID);
+
     public static void init() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         BLOCKS.register(bus);
@@ -44,6 +47,7 @@ public class Registration {
         MENUS.register(bus);
         SERIALIZERS.register(bus);
         MESSAGE_BROKERS.register(bus);
+        SUBSCRIPTION_BROKERS.register(bus);
     }
 
     public static final RegistryObject<EntityType<NpcEntity>> NPC_ENTITY = ENTITIES.register("npc_entity", () -> EntityType.Builder.of(NpcEntity::new, MobCategory.CREATURE)

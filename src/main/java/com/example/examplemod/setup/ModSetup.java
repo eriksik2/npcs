@@ -2,6 +2,8 @@ package com.example.examplemod.setup;
 
 import com.example.examplemod.ExampleMod;
 import com.example.examplemod.networking.ServerToClientBroker;
+import com.example.examplemod.networking.subscribe.SubscriptionBroker;
+import com.example.examplemod.networking.subscribe.SubscriptionMessages;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.tracking.TrackingEvents;
@@ -42,12 +44,15 @@ public class ModSetup {
 
     public static void init(final FMLCommonSetupEvent event) {
         Messages.register();
+        SubscriptionMessages.register();
     }
 
     @SubscribeEvent
     public static void onNewRegistryEvent(NewRegistryEvent event) {
         event.create(new RegistryBuilder<ServerToClientBroker<?>>()
             .setName(new ResourceLocation(ExampleMod.MODID, "message_brokers")));
+        event.create(new RegistryBuilder<SubscriptionBroker<?>>()
+            .setName(new ResourceLocation(ExampleMod.MODID, "subscription_brokers")));
     }
 
     @SubscribeEvent
