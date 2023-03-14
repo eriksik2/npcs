@@ -1,8 +1,9 @@
-package com.example.examplemod.widgets;
+package com.example.examplemod.npc.role;
 
 import java.util.function.Consumer;
 
-import com.example.examplemod.npc.role.NpcRole;
+import com.example.examplemod.widgets.ModWidget;
+import com.example.examplemod.widgets.PopupManagerWidget;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;

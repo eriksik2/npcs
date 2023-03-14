@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import com.example.examplemod.ExampleMod;
+import com.example.examplemod.npc.role.RemoveTeamRoleMsg;
 import com.mojang.realmsclient.client.Request.Get;
 
 import ca.weblite.objc.Client;
@@ -85,6 +86,12 @@ public class Messages {
                 .decoder(OpenEditTeam::new)
                 .encoder(OpenEditTeam::toBytes)
                 .consumerMainThread(OpenEditTeam::handle)
+                .add();
+
+        net.messageBuilder(RemoveTeamRoleMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(RemoveTeamRoleMsg::new)
+                .encoder(RemoveTeamRoleMsg::toBytes)
+                .consumerMainThread(RemoveTeamRoleMsg::handle)
                 .add();
         
 

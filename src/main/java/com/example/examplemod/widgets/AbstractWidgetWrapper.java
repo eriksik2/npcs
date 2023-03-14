@@ -58,7 +58,8 @@ public class AbstractWidgetWrapper<T extends AbstractWidget> extends ModWidget {
  
     @Override
     public boolean onMouseReleased(double mouseX, double mouseY, int button) {
-        return wrappedWidget.mouseReleased(mouseX, mouseY, button);
+        wrappedWidget.mouseReleased(mouseX, mouseY, button);
+        return false;
     }
 
     @Override

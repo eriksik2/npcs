@@ -1,7 +1,10 @@
-package com.example.examplemod.widgets;
+package com.example.examplemod.npc.role;
 
 import com.example.examplemod.networking.AddRoleToTeam;
 import com.example.examplemod.networking.Messages;
+import com.example.examplemod.widgets.AbstractWidgetWrapper;
+import com.example.examplemod.widgets.ModWidget;
+import com.example.examplemod.widgets.TextWidget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

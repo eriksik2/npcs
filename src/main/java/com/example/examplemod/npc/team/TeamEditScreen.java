@@ -4,10 +4,10 @@ import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.SetNpcTeamData;
 import com.example.examplemod.networking.subscribe.ServerSubscription;
+import com.example.examplemod.npc.role.RolesExplorerWidget;
 import com.example.examplemod.setup.Registration;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.PopupManagerWidget;
-import com.example.examplemod.widgets.RolesExplorerWidget;
 import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.TabsWidget;
 import com.example.examplemod.widgets.TextWidget;
@@ -94,7 +94,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
                 addChild(saveButton).layoutCenterX();
             }
         });
-        rolesExplorer = tabs.addTab(Component.literal("Roles"), new RolesExplorerWidget(tabs, menu.getTeamId(), popupManager));
+        rolesExplorer = tabs.addTab(Component.literal("Roles"), new RolesExplorerWidget(tabs, team, popupManager));
         tabs.addTab(Component.literal("Areas"), new ModWidget(tabs) {
             public void onInit() {
                 this.layoutFillRemaining();
@@ -121,7 +121,7 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     private void onNewTeam(NpcTeam newTeam) {
         team = newTeam;
         if(team == null) return;
-        if(rolesExplorer != null) rolesExplorer.setRolesList(team.getRoles());
+        if(rolesExplorer != null) rolesExplorer.setTeam(team);
         if(nameInput != null) nameInput.setValue(team.getName());
         if(titleWidget != null) titleWidget.setMessage(Component.literal("Editing team: " + team.getName()));
     }
@@ -153,6 +153,12 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
         }
         if(debug != null && debug.mousePressed(mouseX, mouseY, button)) return true;
         return popupManager.mousePressed(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(debug != null) debug.mouseReleased(mouseX, mouseY, button);
+        return popupManager.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
