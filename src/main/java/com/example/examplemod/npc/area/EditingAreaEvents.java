@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -37,6 +38,19 @@ public class EditingAreaEvents {
     public static void clientSetup() {
         IEventBus bus = MinecraftForge.EVENT_BUS;
         //bus.addListener(EditingAreaEvents::onRenderLiving);
+    }
+
+    public static void onRenderLevelStage(RenderLevelStageEvent event) {
+        if(event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            if(event.getCamera().getEntity() instanceof Player player) {
+                if(!player.level.isClientSide) return;
+                NpcArea area = ClientEditingArea.area;
+                if(area == null) return;
+                System.out.println(area.getCorner1().getCenter());
+                NpcAreaRenderer renderer = new NpcAreaRenderer(area);
+                renderer.render(event);
+            }
+        }
     }
 
     public static void onWorldTick(TickEvent.LevelTickEvent event) {

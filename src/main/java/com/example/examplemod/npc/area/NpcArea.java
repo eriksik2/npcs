@@ -11,10 +11,10 @@ public class NpcArea {
     private NpcTeam manager;
     private Integer id;
 
-    private BlockPos corner1;
-    private BlockPos corner2;
+    private BlockPos corner1 = BlockPos.ZERO;
+    private BlockPos corner2 = BlockPos.ZERO;
 
-    private String name;
+    private String name = "Unnamed area";
     private int color;
 
     public NpcArea(NpcTeam manager, int id) {

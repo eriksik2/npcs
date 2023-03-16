@@ -34,6 +34,7 @@ public class ClientSetup {
             MenuScreens.register(Registration.TEAM_EDIT_MENU.get(), TeamEditScreen::new);
         });
         MinecraftForge.EVENT_BUS.addListener(KeyInputHandler::onKeyInput);
+        MinecraftForge.EVENT_BUS.addListener(ClientSetup::onRenderLevelStage);
     }
 
     public static void setup() {
@@ -47,9 +48,8 @@ public class ClientSetup {
         event.registerAbove(VanillaGuiOverlay.FOOD_LEVEL.id(), "trackingoverlay", TrackingOverlay.HUD_TRACKING);
     }
 
-    @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        
+        EditingAreaEvents.onRenderLevelStage(event);
     }
 
     @SubscribeEvent

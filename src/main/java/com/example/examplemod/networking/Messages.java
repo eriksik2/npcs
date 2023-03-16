@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import com.example.examplemod.ExampleMod;
+import com.example.examplemod.npc.area.SyncEditingAreaToClient;
 import com.example.examplemod.npc.role.RemoveTeamRoleMsg;
 import com.example.examplemod.npc.role.ToggleNpcHasRoleMsg;
 import com.mojang.realmsclient.client.Request.Get;
@@ -106,6 +107,12 @@ public class Messages {
                 .decoder(SyncTrackingToClient::new)
                 .encoder(SyncTrackingToClient::toBytes)
                 .consumerMainThread(SyncTrackingToClient::handle)
+                .add();
+
+        net.messageBuilder(SyncEditingAreaToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncEditingAreaToClient::new)
+                .encoder(SyncEditingAreaToClient::toBytes)
+                .consumerMainThread(SyncEditingAreaToClient::handle)
                 .add();
     }
 
