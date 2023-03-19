@@ -5,6 +5,7 @@ import com.example.examplemod.npc.team.NpcTeam;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.AABB;
 
 public class NpcArea {
 
@@ -44,6 +45,15 @@ public class NpcArea {
     public void setDirty() {
         if(manager == null) return;//throw new IllegalStateException("Cannot set dirty on an area that does not have a manager.");
         manager.setDirty();
+    }
+
+    public AABB toAABB() {
+        return new AABB(corner1, corner2);
+    }
+
+    public void fromAAAB(AABB aabb) {
+        corner1 = new BlockPos(aabb.minX, aabb.minY, aabb.minZ);
+        corner2 = new BlockPos(aabb.maxX, aabb.maxY, aabb.maxZ);
     }
 
     public Integer getId() {

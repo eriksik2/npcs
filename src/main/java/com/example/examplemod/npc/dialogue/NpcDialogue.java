@@ -87,6 +87,7 @@ public class NpcDialogue extends DialogueGraph<String, String> {
                         return true;
                     });
                 if(teamData == null) return tasksNode;
+                if(npcData == null) return tasksNode;
                 List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
                 for(NpcRole role : teamData.getRoles()) {
                     if(hasRoles.contains(role.getId())) continue;
@@ -115,6 +116,7 @@ public class NpcDialogue extends DialogueGraph<String, String> {
                         return true;
                     });
                 if(teamData == null) return tasksNode;
+                if(npcData == null) return tasksNode;
                 List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
                 for(NpcRole role : teamData.getRoles()) {
                     if(!hasRoles.contains(role.getId())) continue;
