@@ -15,6 +15,10 @@ public class ButtonWidget extends ModWidget {
         this.text.setWrap(true);
     }
 
+    public void setText(String text) {
+        this.text.setText(text);
+    }
+
     public void setOnClick(Runnable onClick) {
         this.onClick = onClick;
     }

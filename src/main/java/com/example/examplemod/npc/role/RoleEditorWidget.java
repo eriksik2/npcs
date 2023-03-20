@@ -6,6 +6,7 @@ import com.example.examplemod.npc.team.NpcTeam;
 import com.example.examplemod.widgets.ButtonWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.NpcPreviewWidget;
+import com.example.examplemod.widgets.RowLayoutWidget;
 import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.ScrollableWidget;
 import com.example.examplemod.widgets.TextWidget;
@@ -17,7 +18,11 @@ public class RoleEditorWidget extends ModWidget {
     private TextWidget description;
 
     private TextWidget npcListLabel;
-    private ScrollableListWidget npcList;
+
+    private ScrollableWidget npcScrollable;
+    private RowLayoutWidget npcList;
+
+    private RoleAreasEditorWidget roleAreasEditor;
 
     private ButtonWidget saveButton;
     private ButtonWidget removeButton;
@@ -38,8 +43,13 @@ public class RoleEditorWidget extends ModWidget {
         description.setWrap(true);
 
         npcListLabel = new TextWidget(scrollable, "Workers");
-        npcList = new ScrollableListWidget(scrollable);
+        npcScrollable = new ScrollableWidget(scrollable);
+        npcList = new RowLayoutWidget(npcScrollable);
         npcList.setGap(2);
+        npcList.setRowGap(2);
+        npcList.setWrap(true);
+
+        roleAreasEditor = new RoleAreasEditorWidget(scrollable);
 
         saveButton = new ButtonWidget(this, "Save");
         saveButton.setOnClick(() -> {
@@ -70,10 +80,16 @@ public class RoleEditorWidget extends ModWidget {
 
         npcListLabel.setY(description.getY() + description.getHeight() + 5);
         npcListLabel.layoutFillX();
-        npcList.setWidth(getInnerWidth()*4/5);
-        npcList.setHeight(50);
-        npcList.layoutCenterX();
-        npcList.setY(npcListLabel.getY() + npcListLabel.getHeight() + 5);
+        npcScrollable.setY(npcListLabel.getY() + npcListLabel.getHeight() + 5);
+        npcScrollable.setX(5);
+        npcScrollable.setWidth(scrollable.getInnerWidth() - npcScrollable.getX() - 5);
+        npcScrollable.setHeight(50);
+        npcList.layoutFillRemaining();
+
+        roleAreasEditor.setY(npcScrollable.getY() + npcScrollable.getHeight() + 5);
+        roleAreasEditor.setX(0);
+        roleAreasEditor.setWidth(scrollable.getInnerWidth() - roleAreasEditor.getX() - 2);
+        roleAreasEditor.setHeight(100);
 
         saveButton.setY(scrollable.getHeight());
         saveButton.setX(getInnerWidth()/2 + 5);
@@ -95,6 +111,7 @@ public class RoleEditorWidget extends ModWidget {
         this.team = team;
         this.role = role;
 
+        roleAreasEditor.setRole(team.getId(), role.getId());
         npcList.clearChildren();
         if(role != null) {
             for(Integer npc : team.getNpcsOf(role.getId())) {

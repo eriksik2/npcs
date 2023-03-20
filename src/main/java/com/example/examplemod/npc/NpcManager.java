@@ -1,6 +1,8 @@
 package com.example.examplemod.npc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -225,5 +227,16 @@ public class NpcManager extends SavedData {
                 .addOwner(player);
         }
         return team;
+    }
+
+    public List<Integer> getPlayerTeamIds(Player player) {
+        List<Integer> teamIds = new ArrayList<Integer>();
+        for(Integer key : teams.keySet()) {
+            NpcTeam team = teams.get(key);
+            if(team.isOwner(player)) {
+                teamIds.add(key);
+            }
+        }
+        return teamIds;
     }
 }

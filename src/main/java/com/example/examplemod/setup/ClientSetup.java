@@ -7,6 +7,7 @@ import com.example.examplemod.encyclopedia.EncyclopediaScreen;
 import com.example.examplemod.npc.NpcInteractScreen;
 import com.example.examplemod.npc.NpcModel;
 import com.example.examplemod.npc.NpcRenderer;
+import com.example.examplemod.npc.area.EditingAreaClientEvents;
 import com.example.examplemod.npc.area.EditingAreaEvents;
 import com.example.examplemod.npc.team.TeamEditScreen;
 import com.example.examplemod.tracking.TrackingEvents;
@@ -40,7 +41,7 @@ public class ClientSetup {
     public static void setup() {
         IEventBus bus = MinecraftForge.EVENT_BUS;
         TrackingEvents.clientSetup();
-        EditingAreaEvents.clientSetup();
+        EditingAreaClientEvents.clientSetup();
     }
 
     @SubscribeEvent
@@ -49,7 +50,7 @@ public class ClientSetup {
     }
 
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        EditingAreaEvents.onRenderLevelStage(event);
+        EditingAreaClientEvents.onRenderLevelStage(event);
     }
 
     @SubscribeEvent

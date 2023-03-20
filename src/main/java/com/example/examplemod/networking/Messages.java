@@ -4,7 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import com.example.examplemod.ExampleMod;
+import com.example.examplemod.npc.area.AddNpcAreaMsg;
 import com.example.examplemod.npc.area.SyncEditingAreaToClient;
+import com.example.examplemod.npc.area.ToggleRoleHasAreaMsg;
+import com.example.examplemod.npc.area.UpdateAreaPositionMsg;
 import com.example.examplemod.npc.role.RemoveTeamRoleMsg;
 import com.example.examplemod.npc.role.ToggleNpcHasRoleMsg;
 import com.mojang.realmsclient.client.Request.Get;
@@ -100,6 +103,24 @@ public class Messages {
                 .decoder(ToggleNpcHasRoleMsg::new)
                 .encoder(ToggleNpcHasRoleMsg::toBytes)
                 .consumerMainThread(ToggleNpcHasRoleMsg::handle)
+                .add();
+
+        net.messageBuilder(AddNpcAreaMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(AddNpcAreaMsg::new)
+                .encoder(AddNpcAreaMsg::toBytes)
+                .consumerMainThread(AddNpcAreaMsg::handle)
+                .add();
+
+        net.messageBuilder(UpdateAreaPositionMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(UpdateAreaPositionMsg::new)
+                .encoder(UpdateAreaPositionMsg::toBytes)
+                .consumerMainThread(UpdateAreaPositionMsg::handle)
+                .add();
+
+        net.messageBuilder(ToggleRoleHasAreaMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ToggleRoleHasAreaMsg::new)
+                .encoder(ToggleRoleHasAreaMsg::toBytes)
+                .consumerMainThread(ToggleRoleHasAreaMsg::handle)
                 .add();
         
 

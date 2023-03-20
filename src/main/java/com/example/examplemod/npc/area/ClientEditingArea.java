@@ -3,19 +3,47 @@ package com.example.examplemod.npc.area;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.joml.Vector3f;
-
+import com.example.examplemod.networking.subscribe.ServerSubscription;
 import com.example.examplemod.npc.area.NpcAreaRenderer.AreaHitResult;
-
-import net.minecraft.client.Camera;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
+import com.example.examplemod.npc.team.NpcTeam;
+import com.example.examplemod.npc.team.TeamSubscriptionBroker;
+import com.example.examplemod.setup.Registration;
 
 public class ClientEditingArea {
+    private static TeamSubscriptionBroker teamSubscriptionBroker;
+    private static ServerSubscription<NpcTeam> teamSubscription;
+    private static Integer areaId;
+    private static Integer teamId;
+
     public static NpcArea area;
     private static boolean doHitTests = true;
     private static List<AreaHitResult> hitResults = new ArrayList<AreaHitResult>();
 
+    public static void setEditingArea(Integer teamId, Integer areaId) {
+        if(teamSubscriptionBroker == null) teamSubscriptionBroker = Registration.TEAM_SUBSCRIPTION_BROKER.get();
+
+        if(teamSubscription != null) {
+            teamSubscription.deinit();
+            teamSubscription = null;
+        }
+        teamSubscription = teamSubscriptionBroker.subscribe(teamId);
+        teamSubscription.addListener(ClientEditingArea::onTeamUpdate);
+        ClientEditingArea.teamId = teamId;
+        ClientEditingArea.areaId = areaId;
+    }
+
+    private static synchronized void onTeamUpdate(NpcTeam team) {
+        if(team == null) return;
+        area = team.getArea(areaId);
+    }
+
+    public static Integer getTeamId() {
+        return teamId;
+    }
+
+    public static Integer getAreaId() {
+        return areaId;
+    }
 
     public static synchronized void stopHitTests() {
         doHitTests = false;

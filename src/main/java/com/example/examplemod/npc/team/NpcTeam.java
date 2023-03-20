@@ -137,6 +137,7 @@ public class NpcTeam {
     private ArrayList<NpcRole> roles;
     private NpcAssignedRoles npcAssignedRoles;
     private ArrayList<NpcArea> areas;
+    private RoleAssignedAreas roleAssignedAreas;
 
 
     public static NpcTeam initialNpcTeam(Integer id, NpcManager manager) {
@@ -159,6 +160,7 @@ public class NpcTeam {
         roles = new ArrayList<NpcRole>();
         npcAssignedRoles = new NpcAssignedRoles();
         areas = new ArrayList<NpcArea>();
+        roleAssignedAreas = new RoleAssignedAreas();
     }
 
     public NpcTeam(CompoundTag data, NpcManager manager) {
@@ -191,6 +193,8 @@ public class NpcTeam {
         }
         nextAreaId = data.getInt("nextAreaId");
 
+        roleAssignedAreas = new RoleAssignedAreas(data.getList("roleAssignedAreas", Tag.TAG_COMPOUND));
+
     }
 
     public CompoundTag toCompoundTag() {
@@ -222,6 +226,8 @@ public class NpcTeam {
         data.put("areas", areasTag);
         data.putInt("nextAreaId", nextAreaId);
 
+        data.put("roleAssignedAreas", roleAssignedAreas.toListTag());
+
         return data;
     }
 
@@ -241,6 +247,8 @@ public class NpcTeam {
         hash ^= npcMembers == null ? 0 : npcMembers.hashCode();
         hash ^= roles == null ? 0 : roles.hashCode();
         hash ^= npcAssignedRoles == null ? 0 : npcAssignedRoles.hashCode();
+        hash ^= areas == null ? 0 : areas.hashCode();
+        hash ^= roleAssignedAreas == null ? 0 : roleAssignedAreas.hashCode();
         return hash;
     }
 
@@ -348,6 +356,7 @@ public class NpcTeam {
         boolean didRemove = roles.removeIf(role -> role.getId() == roleId);
         if(!didRemove) return this;
         npcAssignedRoles.removeRole(roleId);
+        roleAssignedAreas.removeRole(roleId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
         setDirty();
         return this;
@@ -355,6 +364,10 @@ public class NpcTeam {
 
     public List<NpcArea> getAreas() {
         return areas;
+    }
+
+    public NpcArea getArea(int areaId) {
+        return areas.stream().filter(area -> area.getId() == areaId).findFirst().orElse(null);
     }
 
     public NpcArea addArea() {
@@ -369,8 +382,29 @@ public class NpcTeam {
     public NpcTeam removeArea(int areaId) {
         boolean didRemove = areas.removeIf(area -> area.getId() == areaId);
         if(!didRemove) return this;
+        roleAssignedAreas.removeArea(areaId);
         if(manager == null) throw new RuntimeException("NpcTeam.removeArea presumably called on the client.");
         setDirty();
         return this;
+    }
+
+    public void assignAreaToRole(int areaId, int roleId) {
+        roleAssignedAreas.associateRoleWithArea(roleId, areaId);
+        if(manager == null) throw new RuntimeException("NpcTeam.assignAreaToRole presumably called on the client.");
+        setDirty();
+    }
+
+    public void unassignAreaFromRole(int areaId, int roleId) {
+        roleAssignedAreas.disassociateRoleWithArea(roleId, areaId);
+        if(manager == null) throw new RuntimeException("NpcTeam.unassignAreaFromRole presumably called on the client.");
+        setDirty();
+    }
+
+    public List<Integer> getAreasOf(int roleId) {
+        return roleAssignedAreas.getAreas(roleId);
+    }
+
+    public boolean roleHasArea(int roleId, int areaId) {
+        return roleAssignedAreas.roleHasArea(roleId, areaId);
     }
 }

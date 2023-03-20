@@ -11,6 +11,7 @@ import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcInteractMenu;
 import com.example.examplemod.npc.NpcRenderDataSerializer;
 import com.example.examplemod.npc.area.AreaDesignatorItem;
+import com.example.examplemod.npc.team.PlayerTeamsSubscriptionBroker;
 import com.example.examplemod.npc.team.TeamEditMenu;
 import com.example.examplemod.npc.team.TeamSubscriptionBroker;
 
@@ -39,9 +40,10 @@ public class Registration {
     public static final DeferredRegister<ServerToClientBroker<?>> MESSAGE_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "message_brokers"), ExampleMod.MODID);
     public static final RegistryObject<NpcDataServerToClientBroker> NPC_DATA_BROKER = MESSAGE_BROKERS.register("npc_data_broker", () -> NpcDataServerToClientBroker.instance);
     public static final RegistryObject<NpcTeamServerToClientBroker> NPC_TEAM_BROKER = MESSAGE_BROKERS.register("npc_team_broker", () -> NpcTeamServerToClientBroker.instance);
-
+    
     public static final DeferredRegister<SubscriptionBroker<?>> SUBSCRIPTION_BROKERS = DeferredRegister.create(new ResourceLocation(ExampleMod.MODID, "subscription_brokers"), ExampleMod.MODID);
     public static final RegistryObject<TeamSubscriptionBroker> TEAM_SUBSCRIPTION_BROKER = SUBSCRIPTION_BROKERS.register("team_subscription_broker", () -> TeamSubscriptionBroker.INSTANCE);
+    public static final RegistryObject<PlayerTeamsSubscriptionBroker> PLAYER_TEAMS_SUBSCRIPTION_BROKER = SUBSCRIPTION_BROKERS.register("player_teams_subscription_broker", () -> PlayerTeamsSubscriptionBroker.INSTANCE);
     public static final RegistryObject<NpcDataSubscriptionBroker> NPC_DATA_SUBSCRIPTION_BROKER = SUBSCRIPTION_BROKERS.register("npc_data_subscription_broker", () -> NpcDataSubscriptionBroker.INSTANCE);
 
     public static void init() {

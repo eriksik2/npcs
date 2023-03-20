@@ -8,6 +8,7 @@ public class ServerSubscription<TData> {
 
     private final SubscriptionBroker<TData> manager;
     private final Integer dataId;
+    private Integer dataHash;
     private final ArrayList<Consumer<TData>> consumers = new ArrayList<>();
     
     public ServerSubscription(SubscriptionBroker<TData> manager, Integer dataId) {
@@ -21,6 +22,9 @@ public class ServerSubscription<TData> {
     }
 
     public void publish(TData data) {
+        int hash = data.hashCode();
+        if(dataHash != null && hash == dataHash) return;
+        dataHash = hash;
         for(Consumer<TData> consumer : consumers) {
             consumer.accept(data);
         }

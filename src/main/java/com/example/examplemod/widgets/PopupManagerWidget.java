@@ -59,7 +59,7 @@ public class PopupManagerWidget extends ModWidget {
     public ArrayList<PopupWidget> removalQueue = new ArrayList<>();
     public ArrayList<PopupWidget> popups = new ArrayList<>();
 
-    public PopupManagerWidget(PopupWidget parent) {
+    public PopupManagerWidget(ModWidget parent) {
         super(parent);
     }
 

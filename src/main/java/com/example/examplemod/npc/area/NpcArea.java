@@ -42,6 +42,16 @@ public class NpcArea {
         return tag;
     }
 
+    @Override
+    public int hashCode() {
+        int idHc = id == null ? 0 : id.hashCode();
+        int corner1Hc = corner1 == null ? 0 : corner1.hashCode();
+        int corner2Hc = corner2 == null ? 0 : corner2.hashCode();
+        int nameHc = name == null ? 0 : name.hashCode();
+        int colorHc = color;
+        return idHc ^ corner1Hc ^ corner2Hc ^ nameHc ^ colorHc;
+    }
+
     public void setDirty() {
         if(manager == null) return;//throw new IllegalStateException("Cannot set dirty on an area that does not have a manager.");
         manager.setDirty();
