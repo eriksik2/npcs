@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.example.examplemod.networking.subscribe.DataVersion;
 import com.example.examplemod.npc.team.NpcTeam;
 
 import net.minecraft.nbt.CompoundTag;
@@ -97,6 +98,7 @@ public class NpcManager extends SavedData {
             entity.npcId = npcId;
             entity.npcData = NpcData.generate();
             entity.npcData.npcId = npcId;
+            entity.npcData.version = new DataVersion(npcId);
             loadedNpcs.put(npcId, entity);
         } else {
             PassiveNpcData data = unloadedNpcs.get(npcId);

@@ -1,11 +1,13 @@
 package com.example.examplemod.npc;
 
 import com.example.examplemod.generator.NpcGenerator;
+import com.example.examplemod.networking.subscribe.DataVersion;
+import com.example.examplemod.networking.subscribe.Versionable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
-public class NpcData {
+public class NpcData implements Versionable {
 
     public enum Gender {
         MALE,
@@ -13,6 +15,7 @@ public class NpcData {
     }
 
     private boolean _isInitialized = true;
+    public DataVersion version;
     public int npcId;
     public Gender gender;
     public String name;
@@ -28,6 +31,7 @@ public class NpcData {
     }
 
     public NpcData(CompoundTag data) {
+        version = new DataVersion(data.getCompound("version"));
         npcId = data.getInt("npcId");
         gender = Gender.values()[data.getInt("gender")];
         name = data.getString("name");
@@ -38,6 +42,7 @@ public class NpcData {
 
     public CompoundTag toCompoundTag() {
         CompoundTag data = new CompoundTag();
+        data.put("version", version.toCompoundTag());
         data.putInt("npcId", npcId);
         data.putInt("gender", gender.ordinal());
         data.putString("name", name);
@@ -48,6 +53,7 @@ public class NpcData {
     }
 
     public NpcData(FriendlyByteBuf buf) {
+        version = new DataVersion(buf);
         npcId = buf.readInt();
         gender = buf.readEnum(Gender.class);
         name = buf.readUtf();
@@ -58,6 +64,7 @@ public class NpcData {
     }
 
     public void toBytes(FriendlyByteBuf buf) {
+        version.toBytes(buf);
         buf.writeInt(npcId);
         buf.writeEnum(gender);
         buf.writeUtf(name);
@@ -74,6 +81,11 @@ public class NpcData {
         data.npcId = npcId;
         data.teamId = teamId;
         return data;
+    }
+
+    @Override
+    public DataVersion getVersion() {
+        return version;
     }
 
     @Override

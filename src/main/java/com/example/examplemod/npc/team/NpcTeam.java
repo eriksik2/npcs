@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.example.examplemod.networking.subscribe.DataVersion;
+import com.example.examplemod.networking.subscribe.Versionable;
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcManager;
 import com.example.examplemod.npc.area.NpcArea;
@@ -123,7 +125,9 @@ class NpcAssignedRoles {
    
 }
 
-public class NpcTeam {
+public class NpcTeam implements Versionable {
+
+    private final DataVersion version;
 
     private NpcManager manager;
     private Integer id;
@@ -153,6 +157,7 @@ public class NpcTeam {
     }
 
     public NpcTeam(Integer id, NpcManager manager) {
+        version = new DataVersion(id);
         this.id = id;
         this.manager = manager;
         owners = new ArrayList<UUID>();
@@ -165,6 +170,9 @@ public class NpcTeam {
 
     public NpcTeam(CompoundTag data, NpcManager manager) {
         this.manager = manager;
+
+        version = new DataVersion(data.getCompound("version"));
+
         id = data.getInt("id");
         name = data.getString("name");
         if(name == "") name = null;
@@ -199,6 +207,9 @@ public class NpcTeam {
 
     public CompoundTag toCompoundTag() {
         CompoundTag data = new CompoundTag();
+
+        data.put("version", version.toCompoundTag());
+
         data.putInt("id", id);
         data.putString("name", name == null ? "" : name);
 
@@ -240,6 +251,11 @@ public class NpcTeam {
     }
 
     @Override
+    public DataVersion getVersion() {
+        return version;
+    }
+
+    @Override
     public int hashCode() {
         int hash = 0;
         hash ^= name == null ? 0 : name.hashCode();
@@ -253,6 +269,7 @@ public class NpcTeam {
     }
 
     public void setDirty() {
+        version.markDirty();
         Registration.TEAM_SUBSCRIPTION_BROKER.get().publish(id, this);
         manager.setDirty();
     }

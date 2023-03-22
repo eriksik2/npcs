@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package com.example.examplemod.networking.subscribe;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;

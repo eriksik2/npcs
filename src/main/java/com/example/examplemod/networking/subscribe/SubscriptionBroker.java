@@ -9,7 +9,13 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-class ClientSideSubscriptions<TData> {
+// TODO
+// This class could hold the latest copy of the data.
+// Whenever a subscribe request is sent to the server, we could send with it the DataVersion of the data the client has.
+// If the server has a newer version, it could send the new data to the client.
+// New subscribers on the client could then use the data that is immediately available, and the server would send the latest
+// data soon after, if needed.
+class ClientSideSubscriptions<TData extends Versionable> {
     private final SubscriptionBroker<TData> manager;
     private final Integer dataId;
     private final ArrayList<ServerSubscription<TData>> subscribers = new ArrayList<>();
@@ -40,7 +46,7 @@ class ClientSideSubscriptions<TData> {
     }
 }
 
-class ServerSideSubscriptions<TData> {
+class ServerSideSubscriptions<TData extends Versionable> {
     private TData data;
     private HashSet<ServerPlayer> subscribers = new HashSet<>();
     
@@ -69,7 +75,7 @@ class ServerSideSubscriptions<TData> {
     }
 }
 
-public abstract class SubscriptionBroker<TData> {
+public abstract class SubscriptionBroker<TData extends Versionable> {
 
     private ResourceLocation id;
     private HashMap<Integer, ClientSideSubscriptions<TData>> clientSideSubscriptions = new HashMap<>();

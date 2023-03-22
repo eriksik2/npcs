@@ -6,7 +6,6 @@ import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.subscribe.ServerSubscription;
 import com.example.examplemod.npc.team.NpcTeam;
-import com.example.examplemod.npc.team.PlayerTeamsSubscriptionBroker;
 import com.example.examplemod.npc.team.TeamSubscriptionBroker;
 import com.example.examplemod.setup.Registration;
 import com.example.examplemod.widgets.ButtonWidget;
@@ -23,13 +22,11 @@ import net.minecraft.world.entity.player.Player;
 public class AreaDesignatorScreen extends ModWidgetScreen {
 
     private final TeamSubscriptionBroker teamBroker = Registration.TEAM_SUBSCRIPTION_BROKER.get();
-    private final PlayerTeamsSubscriptionBroker playerTeamsBroker = Registration.PLAYER_TEAMS_SUBSCRIPTION_BROKER.get();
 
-    private ServerSubscription<List<Integer>> playerTeamsSubscription;
     private ServerSubscription<NpcTeam> teamSubscription;
 
     private final Player player;
-    private Integer teamId;
+    private Integer teamId = 0;
     private Integer selectedAreaId;
 
     private PopupManagerWidget popupManager;
@@ -40,12 +37,6 @@ public class AreaDesignatorScreen extends ModWidgetScreen {
     protected AreaDesignatorScreen(Player player) {
         super(Component.literal("Area Designator"));
         this.player = player;
-    }
-
-    @Override
-    protected void onInit() {
-        playerTeamsSubscription = playerTeamsBroker.subscribe(0);
-        playerTeamsSubscription.addListener(this::onPlayerTeamsUpdate);
     }
 
     @Override
@@ -85,21 +76,17 @@ public class AreaDesignatorScreen extends ModWidgetScreen {
 
     @Override
     protected void onDeinit() {
-        playerTeamsSubscription.deinit();
-        playerTeamsSubscription = null;
         if(teamSubscription != null) {
             teamSubscription.deinit();
             teamSubscription = null;
         }
     }
 
-    private void onPlayerTeamsUpdate(List<Integer> teamIds) {
+    public void onInit() {
         if(teamSubscription != null) {
             teamSubscription.deinit();
             teamSubscription = null;
         }
-        if(teamIds.isEmpty()) return;
-        teamId = teamIds.get(0);
         teamSubscription = teamBroker.subscribe(teamId);
         teamSubscription.addListener(this::onTeamUpdate);
     }

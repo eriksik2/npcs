@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 
-public class ServerSubscription<TData> {
+public class ServerSubscription<TData extends Versionable> {
 
     private final SubscriptionBroker<TData> manager;
     private final Integer dataId;
-    private Integer dataHash;
+    private DataVersion dataVersion;
     private final ArrayList<Consumer<TData>> consumers = new ArrayList<>();
     
     public ServerSubscription(SubscriptionBroker<TData> manager, Integer dataId) {
@@ -22,9 +22,9 @@ public class ServerSubscription<TData> {
     }
 
     public void publish(TData data) {
-        int hash = data.hashCode();
-        if(dataHash != null && hash == dataHash) return;
-        dataHash = hash;
+        DataVersion version = data.getVersion();
+        if(dataVersion != null && dataVersion.equals(version)) return;
+        dataVersion = version;
         for(Consumer<TData> consumer : consumers) {
             consumer.accept(data);
         }
