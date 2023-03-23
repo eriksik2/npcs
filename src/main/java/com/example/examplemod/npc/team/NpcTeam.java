@@ -332,6 +332,13 @@ public class NpcTeam implements Versionable {
         return this;
     }
 
+    public NpcRole getRole(Integer roleId) {
+        for(NpcRole role : roles) {
+            if(role.getId().equals(roleId)) return role;
+        }
+        return null;
+    }
+
     public List<NpcRole> getRoles() {
         return roles;
     }

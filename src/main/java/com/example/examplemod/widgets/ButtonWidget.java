@@ -15,6 +15,14 @@ public class ButtonWidget extends ModWidget {
         this.text.setWrap(true);
     }
 
+    public void setWrap(boolean wrap) {
+        text.setWrap(wrap);
+    }
+
+    public boolean getWrap() {
+        return text.getWrap();
+    }
+
     public void setText(String text) {
         this.text.setText(text);
     }
@@ -37,6 +45,12 @@ public class ButtonWidget extends ModWidget {
     public void onRelayoutPost() {
         setInnerHeight(text.getHeight());
         text.layoutCenterY();
+        if(getInnerHeight() < text.getHeight()) {
+            setInnerHeight(text.getHeight());
+        }
+        if(getInnerWidth() < text.getWidth()) {
+            setInnerWidth(text.getWidth());
+        }
     }
 
     @Override

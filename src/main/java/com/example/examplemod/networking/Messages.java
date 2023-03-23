@@ -10,6 +10,7 @@ import com.example.examplemod.npc.area.ToggleRoleHasAreaMsg;
 import com.example.examplemod.npc.area.UpdateAreaPositionMsg;
 import com.example.examplemod.npc.role.RemoveTeamRoleMsg;
 import com.example.examplemod.npc.role.ToggleNpcHasRoleMsg;
+import com.example.examplemod.npc.task.AddTaskToRoleMsg;
 import com.mojang.realmsclient.client.Request.Get;
 
 import ca.weblite.objc.Client;
@@ -122,7 +123,12 @@ public class Messages {
                 .encoder(ToggleRoleHasAreaMsg::toBytes)
                 .consumerMainThread(ToggleRoleHasAreaMsg::handle)
                 .add();
-        
+
+        net.messageBuilder(AddTaskToRoleMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(AddTaskToRoleMsg::new)
+                .encoder(AddTaskToRoleMsg::toBytes)
+                .consumerMainThread(AddTaskToRoleMsg::handle)
+                .add();
 
         net.messageBuilder(SyncTrackingToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(SyncTrackingToClient::new)

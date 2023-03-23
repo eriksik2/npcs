@@ -410,6 +410,10 @@ public class ModWidget extends GuiComponent implements Renderable {
         }
     }
 
+    public List<ModWidget> getChildren() {
+        return children;
+    }
+
     public void setActive(boolean active) {
         this.active = active;
         setLayoutDirty();

@@ -6,6 +6,7 @@ import com.example.examplemod.networking.subscribe.SubscriptionBroker;
 import com.example.examplemod.networking.subscribe.SubscriptionMessages;
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.NpcEntity;
+import com.example.examplemod.npc.task.TaskRegistration;
 import com.example.examplemod.tracking.TrackingEvents;
 
 import net.minecraft.network.chat.Component;
@@ -53,6 +54,7 @@ public class ModSetup {
             .setName(new ResourceLocation(ExampleMod.MODID, "message_brokers")));
         event.create(new RegistryBuilder<SubscriptionBroker<?>>()
             .setName(new ResourceLocation(ExampleMod.MODID, "subscription_brokers")));
+        TaskRegistration.onNewRegistryEvent(event);
     }
 
     @SubscribeEvent

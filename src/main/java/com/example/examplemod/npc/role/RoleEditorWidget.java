@@ -1,15 +1,26 @@
 package com.example.examplemod.npc.role;
 
+import java.util.Collection;
+
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.NpcData;
+import com.example.examplemod.npc.task.AddTaskToRoleMsg;
+import com.example.examplemod.npc.task.NpcTask;
+import com.example.examplemod.npc.task.TaskEditorWidget;
+import com.example.examplemod.npc.task.TaskRegistration;
+import com.example.examplemod.npc.task.TaskType;
 import com.example.examplemod.npc.team.NpcTeam;
+import com.example.examplemod.setup.Registration;
 import com.example.examplemod.widgets.ButtonWidget;
+import com.example.examplemod.widgets.ColumnLayoutWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.NpcPreviewWidget;
 import com.example.examplemod.widgets.RowLayoutWidget;
 import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.ScrollableWidget;
 import com.example.examplemod.widgets.TextWidget;
+
+import net.minecraftforge.registries.RegistryObject;
 
 public class RoleEditorWidget extends ModWidget {
 
@@ -18,8 +29,11 @@ public class RoleEditorWidget extends ModWidget {
     private TextWidget description;
 
     private TextWidget npcListLabel;
-
     private RowLayoutWidget npcList;
+
+    private TextWidget taskListLabel;
+    private ColumnLayoutWidget taskList;
+    private RowLayoutWidget addTaskButtons;
 
     private RoleAreasEditorWidget roleAreasEditor;
 
@@ -46,6 +60,26 @@ public class RoleEditorWidget extends ModWidget {
         npcList.setGap(2);
         npcList.setRowGap(2);
         npcList.setWrap(true);
+
+        taskListLabel = new TextWidget(scrollable, "Tasks");
+        taskList = new ColumnLayoutWidget(scrollable);
+
+        addTaskButtons = new RowLayoutWidget(scrollable);
+        addTaskButtons.setWrap(true);
+        addTaskButtons.setGap(2);
+        addTaskButtons.setRowGap(2);
+        Collection<RegistryObject<TaskType>> taskTypes = TaskRegistration.TASK_TYPES.getEntries();
+        for(RegistryObject<TaskType> taskType : taskTypes) {
+            ButtonWidget button = new ButtonWidget(addTaskButtons, "Add " + taskType.get().getName());
+            button.setWrap(false);
+            button.setOnClick(() -> {
+                if(team == null) return;
+                if(role == null) return;
+                Messages.sendToServer(new AddTaskToRoleMsg(team.getId(), role.getId(), taskType.getId()));
+            });
+            button.setWidth(50);
+            button.setHeight(10);
+        }
 
         roleAreasEditor = new RoleAreasEditorWidget(scrollable);
 
@@ -83,7 +117,21 @@ public class RoleEditorWidget extends ModWidget {
         npcList.setWidth(scrollable.getInnerWidth() - npcList.getX() - 5);
         npcList.relayout();
 
-        roleAreasEditor.setY(npcList.getY() + npcList.getHeight() + 18);
+        taskListLabel.setY(npcList.getY() + npcList.getHeight() + 5);
+        taskList.setY(taskListLabel.getY() + taskListLabel.getHeight() + 5);
+        taskList.setX(5);
+        taskList.setWidth(scrollable.getInnerWidth() - taskList.getX() - 2);
+        for(ModWidget child : taskList.getChildren()) {
+            //child.setWidth(taskList.getInnerWidth());
+        }
+        taskList.relayout();
+
+        addTaskButtons.setY(taskList.getY() + taskList.getHeight() + 5);
+        addTaskButtons.setX(5);
+        addTaskButtons.setWidth(scrollable.getInnerWidth() - addTaskButtons.getX() - 2);
+        addTaskButtons.relayout();
+
+        roleAreasEditor.setY(addTaskButtons.getY() + addTaskButtons.getHeight() + 5);
         roleAreasEditor.setX(0);
         roleAreasEditor.setWidth(scrollable.getInnerWidth() - roleAreasEditor.getX() - 2);
         roleAreasEditor.setHeight(100);
@@ -110,6 +158,7 @@ public class RoleEditorWidget extends ModWidget {
 
         roleAreasEditor.setRole(team.getId(), role.getId());
         npcList.clearChildren();
+        taskList.clearChildren();
         if(role != null) {
             for(Integer npc : team.getNpcsOf(role.getId())) {
                 NpcPreviewWidget widget = new NpcPreviewWidget(npcList) {
@@ -121,6 +170,17 @@ public class RoleEditorWidget extends ModWidget {
                 };
                 widget.init();
                 widget.setNpcId(npc);
+            }
+            for(NpcTask task : role.getTasks()) {
+                TaskEditorWidget widget = new TaskEditorWidget(taskList) {
+                    @Override
+                    public void onRelayoutPre() {
+                        layoutFillX();
+                        super.onRelayoutPre();
+                    }
+                };
+                widget.init();
+                widget.setTask(task);
             }
         }
         setLayoutDirty();

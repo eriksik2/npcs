@@ -28,6 +28,7 @@ public class RowLayoutWidget extends ModWidget {
                 if(x + child.getWidth() > getInnerWidth()) {
                     x = 0;
                     y += rowHeight + rowGap;
+                    rowHeight = 0;
                     rows++;
                 }
                 child.setX(x);
@@ -35,6 +36,7 @@ public class RowLayoutWidget extends ModWidget {
                 x += child.getWidth() + gap;
                 rowHeight = Math.max(rowHeight, child.getHeight());
             }
+            y += rowHeight + rowGap;
             if(rows != 1) y -= rowGap;
             setInnerHeight(y);
         }
