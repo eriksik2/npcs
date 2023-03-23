@@ -21,6 +21,7 @@ public class NpcInteractMenu extends AbstractContainerMenu {
 
     public Player player;
     private IItemHandler playerInventory;
+    private NpcEntity npcEntity;
 
     public DataSlot nidSlot;
     public DataSlot eidSlot;
@@ -32,6 +33,7 @@ public class NpcInteractMenu extends AbstractContainerMenu {
         super(Registration.NPC_MENU.get(), windowId);
         this.player = player;
         this.playerInventory = new InvWrapper(playerInventory);
+        this.npcEntity = npcEntity;
 
         this.eidSlot = this.addDataSlot(DataSlot.standalone());
         this.eidSlot.set(npcEntity.getId());
@@ -41,6 +43,7 @@ public class NpcInteractMenu extends AbstractContainerMenu {
         this.teamIdSlot.set(NpcManager.get(player.level).getPlayerTeam(player).getId());
 
         //layoutPlayerInventorySlots(10, 70);
+        npcEntity.setMenuIsOpen(player);
     }
 
     // Client constructor
@@ -54,6 +57,13 @@ public class NpcInteractMenu extends AbstractContainerMenu {
         this.teamIdSlot = this.addDataSlot(DataSlot.standalone());
         
         //layoutPlayerInventorySlots(10, 70);
+    }
+
+    @Override
+    public void removed(Player player) {
+        if(player.level.isClientSide) return;
+        npcEntity.setMenuIsOpen(null);
+        super.removed(player);
     }
 
 

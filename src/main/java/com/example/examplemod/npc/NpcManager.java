@@ -231,6 +231,13 @@ public class NpcManager extends SavedData {
         return team;
     }
 
+    public NpcTeam getNpcTeam(NpcData data) {
+        if(data.getTeamId() != null) {
+            return teams.get(data.getTeamId());
+        }
+        return null;
+    }
+
     public List<Integer> getPlayerTeamIds(Player player) {
         List<Integer> teamIds = new ArrayList<Integer>();
         for(Integer key : teams.keySet()) {
