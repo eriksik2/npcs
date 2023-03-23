@@ -76,7 +76,7 @@ public class TrackingOverlay {
 
                 NpcData npcData = NpcDataServerToClientBroker.instance.get(trackedNpcs.get(i).npcId);
                 if(npcData != null) {
-                    int nameWidth = font.width(npcData.name);
+                    int nameWidth = font.width(npcData.getName());
                     double textPos = x2 + 7;
                     if(textPos + nameWidth > width)
                         textPos = x2 - nameWidth - 7;
@@ -94,7 +94,7 @@ public class TrackingOverlay {
                     ForgeGui.blit(stack, (int)x2-5, (int)y2+10, gui.getBlitOffset(), 8, 8, 8, 8, 64, 32);
                     stack.popPose();
                     
-                    font.draw(stack, npcData.name, (int)textPos, (int)y2+10, 0xffffff);
+                    font.draw(stack, npcData.getName(), (int)textPos, (int)y2+10, 0xffffff);
                 }
 
                 font.draw(stack, ttext, (int)x2-1, (int)y2+1, 0x0);

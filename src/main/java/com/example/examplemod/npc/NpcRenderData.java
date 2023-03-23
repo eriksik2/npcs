@@ -12,7 +12,7 @@ public class NpcRenderData {
     }
 
     public NpcRenderData(NpcData data) {
-        this(data.gender);
+        this(data.getGender());
     }
 
     public NpcRenderData(FriendlyByteBuf buf) {

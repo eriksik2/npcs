@@ -44,6 +44,14 @@ public class RoleAreasEditorWidget extends ModWidget {
     }
 
     @Override
+    public void onDeinit() {
+        if(teamSubscription != null) {
+            teamSubscription.unsubscribe();
+            teamSubscription = null;
+        }
+    }
+
+    @Override
     public void onRelayoutPost() {
         disallowedAreasLabel.setX(getInnerWidth() / 2 + 2);
         roleAreas.setY(allowedAreasLabel.getHeight() + 2);
@@ -58,11 +66,10 @@ public class RoleAreasEditorWidget extends ModWidget {
         this.teamId = teamId;
         this.roleId = roleId;
         if(teamSubscription != null) {
-            teamSubscription.deinit();
+            teamSubscription.unsubscribe();
             teamSubscription = null;
         }
-        teamSubscription = teamSubscriptionBroker.subscribe(teamId);
-        teamSubscription.addListener(this::onTeamUpdate);
+        teamSubscription = teamSubscriptionBroker.subscribe(teamId, this::onTeamUpdate);
     }
 
     private void onTeamUpdate(NpcTeam team) {
@@ -72,6 +79,7 @@ public class RoleAreasEditorWidget extends ModWidget {
         otherAreas.clearChildren();
         for(NpcArea area : areas) {
             AreaPreviewWidget areaPreview = new AreaPreviewWidget(null);
+            areaPreview.init();
             areaPreview.setArea(teamId, area.getId());
             boolean hasArea = roleAreaIds.stream().anyMatch((id) -> id.equals(area.getId()));
             ModWidget container = new ModWidget(hasArea ? roleAreas : otherAreas) {

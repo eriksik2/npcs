@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
+import com.mojang.logging.LogUtils;
+
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,7 +23,9 @@ import net.minecraft.server.level.ServerPlayer;
 class ClientSideSubscriptions<TData extends Versionable> {
     private final SubscriptionBroker<TData> manager;
     private final Integer dataId;
+    private TData data;
     private final ArrayList<ServerSubscription<TData>> subscribers = new ArrayList<>();
+    private final ArrayList<ServerSubscription<TData>> pendingRemoval = new ArrayList<>();
 
     public ClientSideSubscriptions(SubscriptionBroker<TData> manager, Integer dataId) {
         this.manager = manager;
@@ -26,19 +33,25 @@ class ClientSideSubscriptions<TData extends Versionable> {
     }
 
     public void publish(TData data) {
+        this.data = data;
+        for(ServerSubscription<TData> subscription : pendingRemoval) {
+            subscribers.remove(subscription);
+        }
+        pendingRemoval.clear();
         for(ServerSubscription<TData> subscriber : subscribers) {
             subscriber.publish(data);
         }
     }
     
-    public ServerSubscription<TData> subscribe() {
-        ServerSubscription<TData> subscription = new ServerSubscription<TData>(manager, dataId);
+    public ServerSubscription<TData> subscribe(Consumer<TData> consumer) {
+        ServerSubscription<TData> subscription = new ServerSubscription<TData>(manager, dataId, consumer);
         subscribers.add(subscription);
+        if(data != null) subscription.publish(data);
         return subscription;
     }
     
     public void unsubscribe(ServerSubscription<TData> subscription) {
-        subscribers.remove(subscription);
+        pendingRemoval.add(subscription);
     }
 
     public boolean isEmpty() {
@@ -47,7 +60,6 @@ class ClientSideSubscriptions<TData extends Versionable> {
 }
 
 class ServerSideSubscriptions<TData extends Versionable> {
-    private TData data;
     private HashSet<ServerPlayer> subscribers = new HashSet<>();
     
     public boolean subscribe(ServerPlayer subscriberId) {
@@ -62,14 +74,6 @@ class ServerSideSubscriptions<TData extends Versionable> {
         return subscribers.isEmpty();
     }
 
-    public void setData(TData data) {
-        this.data = data;
-    }
-
-    public TData getData() {
-        return data;
-    }
-
     public Set<ServerPlayer> getSubscribers() {
         return subscribers;
     }
@@ -81,25 +85,25 @@ public abstract class SubscriptionBroker<TData extends Versionable> {
     private HashMap<Integer, ClientSideSubscriptions<TData>> clientSideSubscriptions = new HashMap<>();
 
     private HashMap<Integer, ServerSideSubscriptions<TData>> serverSideSubscriptions = new HashMap<>();
+
+    private final Logger logger;
     
     public SubscriptionBroker(ResourceLocation id) {
         this.id = id;
+        this.logger = LogUtils.getLogger();
     }
 
     public void serverRegisterSubscriber(ServerPlayer subscriber, Integer dataId) {
         ServerSideSubscriptions<TData> subscriptions = serverSideSubscriptions.get(dataId);
+        TData initialData = null;
         if (subscriptions == null) {
             subscriptions = new ServerSideSubscriptions<TData>();
             serverSideSubscriptions.put(dataId, subscriptions);
+            initialData = getData(subscriber, dataId);
         }
         subscriptions.subscribe(subscriber);
-        TData data = subscriptions.getData();
-        if(data == null) {
-            subscriptions.setData(getData(subscriber, dataId));
-            data = subscriptions.getData();
-        }
-        if(data != null) {
-            SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, data), subscriber);
+        if(initialData != null) {
+            SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, initialData), subscriber);
         }
     }
 
@@ -113,14 +117,14 @@ public abstract class SubscriptionBroker<TData extends Versionable> {
     }
     
     // Only call from client.
-    public ServerSubscription<TData> subscribe(Integer dataId) {
+    public ServerSubscription<TData> subscribe(Integer dataId, Consumer<TData> consumer) {
         ClientSideSubscriptions<TData> subscriptions = clientSideSubscriptions.get(dataId);
         if (subscriptions == null) {
             subscriptions = new ClientSideSubscriptions<TData>(this, dataId);
             clientSideSubscriptions.put(dataId, subscriptions);
+            SubscriptionMessages.sendToServer(new SubscribeRequest(dataId, id));
         }
-        SubscriptionMessages.sendToServer(new SubscribeRequest(dataId, id));
-        return subscriptions.subscribe();
+        return subscriptions.subscribe(consumer);
     }
     
     // Only call from client.
@@ -140,7 +144,10 @@ public abstract class SubscriptionBroker<TData extends Versionable> {
 
     public void clientReceivePayload(Integer dataId, TData data) {
         ClientSideSubscriptions<TData> subscriptions = clientSideSubscriptions.get(dataId);
-        if (subscriptions == null) return;
+        if (subscriptions == null) {
+            logger.warn("Received data for unsubscribed dataId: " + dataId + " in SubscriptionBroker with id " + id + ".");
+            return;
+        }
         subscriptions.publish(data);
     }
     
@@ -148,7 +155,6 @@ public abstract class SubscriptionBroker<TData extends Versionable> {
     public void publish(Integer dataId, TData data) {
         ServerSideSubscriptions<TData> subscriptions = serverSideSubscriptions.get(dataId);
         if(subscriptions == null) return;
-        subscriptions.setData(data);
         for(ServerPlayer player : subscriptions.getSubscribers()) {
             SubscriptionMessages.sendToPlayer(new SubscriptionPayload(id, dataId, data), player);
         }

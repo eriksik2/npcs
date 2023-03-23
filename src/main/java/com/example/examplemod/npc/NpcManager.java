@@ -64,7 +64,7 @@ public class NpcManager extends SavedData {
         for(String npcKey : unloadedNpcsTag.getAllKeys()) {
             Integer key = Integer.decode(npcKey);
             Tag npcTag = unloadedNpcsTag.get(npcKey);
-            unloadedNpcs.put(key, new PassiveNpcData((CompoundTag)npcTag));
+            unloadedNpcs.put(key, new PassiveNpcData((CompoundTag)npcTag, this));
         }
         loadedNpcs = new HashMap<Integer, NpcEntity>();
     }
@@ -97,8 +97,8 @@ public class NpcManager extends SavedData {
             npcId = getUniqueNpcId();
             entity.npcId = npcId;
             entity.npcData = NpcData.generate();
-            entity.npcData.npcId = npcId;
-            entity.npcData.version = new DataVersion(npcId);
+            entity.npcData.setManager(this);
+            entity.npcData.setId(npcId);
             loadedNpcs.put(npcId, entity);
         } else {
             PassiveNpcData data = unloadedNpcs.get(npcId);
@@ -179,25 +179,25 @@ public class NpcManager extends SavedData {
     }
 
     public void addNpcToTeam(NpcData data, NpcTeam team) {
-        if(data.teamId != null) {
-            if(data.teamId == team.getId()) return;
-            NpcTeam oldTeam = teams.get(data.teamId);
+        if(data.getTeamId() != null) {
+            if(data.getTeamId() == team.getId()) return;
+            NpcTeam oldTeam = teams.get(data.getTeamId());
             if(oldTeam != null) {
-                oldTeam.removeNpcId(data.npcId);
+                oldTeam.removeNpcId(data.getId());
             }
         }
-        team.addNpcId(data.npcId);
-        data.teamId = team.getId();
+        team.addNpcId(data.getId());
+        data.setTeamId(team.getId());
         setDirty();
     }
 
     public void removeNpcFromTeam(NpcData data) {
-        if(data.teamId != null) {
-            NpcTeam team = teams.get(data.teamId);
+        if(data.getTeamId() != null) {
+            NpcTeam team = teams.get(data.getTeamId());
             if(team != null) {
-                team.removeNpcId(data.npcId);
+                team.removeNpcId(data.getId());
             }
-            data.teamId = null;
+            data.setTeamId(null);
             setDirty();
         }
     }

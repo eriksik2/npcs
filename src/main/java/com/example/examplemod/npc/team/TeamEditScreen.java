@@ -38,8 +38,6 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
     public TeamEditScreen(TeamEditMenu container, Inventory inv, Component title) {
         super(container, inv, title);
 
-        teamSubscription = Registration.TEAM_SUBSCRIPTION_BROKER.get().subscribe(container.getTeamId());
-        teamSubscription.addListener(this::onNewTeam);
 
         this.font = Minecraft.getInstance().font;
         this.imageWidth = 176;
@@ -49,7 +47,10 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
 
     @Override
     public void onClose() {
-        teamSubscription.deinit();
+        if(teamSubscription != null) {
+            teamSubscription.unsubscribe();
+            teamSubscription = null;
+        }
         popupManager.deinit();
         super.onClose();
     }
@@ -116,6 +117,11 @@ public class TeamEditScreen extends AbstractContainerScreen<TeamEditMenu> {
             }
         });
         popupManager.init();
+        if(teamSubscription != null) {
+            teamSubscription.unsubscribe();
+            teamSubscription = null;
+        }
+        teamSubscription = Registration.TEAM_SUBSCRIPTION_BROKER.get().subscribe(menu.getTeamId(), this::onNewTeam);
     }
 
     private void onNewTeam(NpcTeam newTeam) {

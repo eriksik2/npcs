@@ -15,11 +15,11 @@ public class PassiveNpcData {
         data = entity.npcData;
     }
 
-    public PassiveNpcData(CompoundTag tag) {
+    public PassiveNpcData(CompoundTag tag, NpcManager manager) {
         x = tag.getDouble("x");
         y = tag.getDouble("y");
         z = tag.getDouble("z");
-        data = new NpcData(tag.getCompound("data"));
+        data = new NpcData(tag.getCompound("data"), manager);
     }
 
     public CompoundTag toCompoundTag() {

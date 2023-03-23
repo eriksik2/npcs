@@ -38,11 +38,11 @@ public class ModWidgetScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        onInit();
         root.clearChildren();
         root.setSize(width, height);
         registerWidgets(root);
         root.init();
+        onInit();
     }
 
     protected void onInit() {

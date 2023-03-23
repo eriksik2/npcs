@@ -26,11 +26,10 @@ public class AreaPreviewWidget extends ModWidget {
         this.teamId = teamId;
         this.areaId = areaId;
         if(teamSubscription != null) {
-            teamSubscription.deinit();
+            teamSubscription.unsubscribe();
             teamSubscription = null;
         }
-        teamSubscription = teamSubscriptionBroker.subscribe(teamId);
-        teamSubscription.addListener(this::onTeamUpdate);
+        teamSubscription = teamSubscriptionBroker.subscribe(teamId, this::onTeamUpdate);
     }
 
     private void onTeamUpdate(NpcTeam team) {
@@ -47,7 +46,7 @@ public class AreaPreviewWidget extends ModWidget {
     @Override
     public void onDeinit() {
         if(teamSubscription != null) {
-            teamSubscription.deinit();
+            teamSubscription.unsubscribe();
             teamSubscription = null;
         }
     }

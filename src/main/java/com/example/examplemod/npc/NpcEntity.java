@@ -70,7 +70,7 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
         if(!level.isClientSide) {
             NpcManager worldData = NpcManager.get(level);
             worldData.registerNpcEntity(this);
-            entityData.set(npcRenderData, new NpcRenderData(npcData.gender));
+            entityData.set(npcRenderData, new NpcRenderData(npcData.getGender()));
         }
     }
 

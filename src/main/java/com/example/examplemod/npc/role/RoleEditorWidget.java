@@ -19,7 +19,6 @@ public class RoleEditorWidget extends ModWidget {
 
     private TextWidget npcListLabel;
 
-    private ScrollableWidget npcScrollable;
     private RowLayoutWidget npcList;
 
     private RoleAreasEditorWidget roleAreasEditor;
@@ -43,8 +42,7 @@ public class RoleEditorWidget extends ModWidget {
         description.setWrap(true);
 
         npcListLabel = new TextWidget(scrollable, "Workers");
-        npcScrollable = new ScrollableWidget(scrollable);
-        npcList = new RowLayoutWidget(npcScrollable);
+        npcList = new RowLayoutWidget(scrollable);
         npcList.setGap(2);
         npcList.setRowGap(2);
         npcList.setWrap(true);
@@ -80,13 +78,12 @@ public class RoleEditorWidget extends ModWidget {
 
         npcListLabel.setY(description.getY() + description.getHeight() + 5);
         npcListLabel.layoutFillX();
-        npcScrollable.setY(npcListLabel.getY() + npcListLabel.getHeight() + 5);
-        npcScrollable.setX(5);
-        npcScrollable.setWidth(scrollable.getInnerWidth() - npcScrollable.getX() - 5);
-        npcScrollable.setHeight(50);
-        npcList.layoutFillRemaining();
+        npcList.setY(npcListLabel.getY() + npcListLabel.getHeight() + 5);
+        npcList.setX(5);
+        npcList.setWidth(scrollable.getInnerWidth() - npcList.getX() - 5);
+        npcList.relayout();
 
-        roleAreasEditor.setY(npcScrollable.getY() + npcScrollable.getHeight() + 5);
+        roleAreasEditor.setY(npcList.getY() + npcList.getHeight() + 18);
         roleAreasEditor.setX(0);
         roleAreasEditor.setWidth(scrollable.getInnerWidth() - roleAreasEditor.getX() - 2);
         roleAreasEditor.setHeight(100);
@@ -122,6 +119,7 @@ public class RoleEditorWidget extends ModWidget {
                         //layoutFillX();
                     }
                 };
+                widget.init();
                 widget.setNpcId(npc);
             }
         }

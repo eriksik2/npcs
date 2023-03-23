@@ -25,7 +25,7 @@ public class NpcDialogueHelper {
     }
 
     public String getPronoun() {
-        return switch(npc.gender) {
+        return switch(npc.getGender()) {
             case MALE -> switch(subjectOrObject) {
                 case SUBJECT -> switch(person) {
                     case FIRST -> "I";

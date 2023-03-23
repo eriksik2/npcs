@@ -160,6 +160,7 @@ public class ModWidget extends GuiComponent implements Renderable {
     public void onInit() {}
 
     public final void relayout() {
+        if(!layoutDirty) return;
         init();
         if(!getActive()) return;
         onRelayoutPre();
@@ -282,6 +283,10 @@ public class ModWidget extends GuiComponent implements Renderable {
     }
 
     public void clearChildren() {
+        for (ModWidget child : children) {
+            child.parent = null;
+            child.deinit();
+        }
         children.clear();
     }
 
@@ -393,6 +398,16 @@ public class ModWidget extends GuiComponent implements Renderable {
 
     public boolean isInitialized() {
         return isInitialized;
+    }
+
+    public void setParent(ModWidget parent) {
+        if(this.parent == parent) return;
+        if(this.parent != null) this.parent.children.remove(this);
+        if(parent != null) {
+            parent.addChild(this);
+        } else {
+            this.parent = null;
+        }
     }
 
     public void setActive(boolean active) {

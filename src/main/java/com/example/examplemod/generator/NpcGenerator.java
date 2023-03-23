@@ -21,7 +21,7 @@ public class NpcGenerator extends Generator<NpcData> {
     protected NpcData build(Map<String, Object> values) {
         NpcData.Gender gender = (NpcData.Gender)values.get("gender");
         String name = (String)values.get("name");
-        return new NpcData(gender, name);
+        return new NpcData(gender, name, null);
     }
     
 }

@@ -39,12 +39,13 @@ public class NpcDialogue extends DialogueGraph<String, String> {
                 .canEnterIf(() -> {
                     if(npcData == null) return false;
                     if(teamData == null) return false;
-                    if(npcData.teamId == teamData.getId()) return false;
+                    if(npcData.getTeamId() == teamData.getId()) return false;
                     return true;
                 })
                 .onEnter(() -> {
-                    Messages.sendToServer(new AddNpcToPlayerTeam(npcData.npcId));
+                    Messages.sendToServer(new AddNpcToPlayerTeam(npcData.getId()));
                     npcData = null;
+                    teamData = null;
                 })
                 .withTransition("Great!", root)
         );
@@ -55,7 +56,7 @@ public class NpcDialogue extends DialogueGraph<String, String> {
                 .canEnterIf(() -> {
                     if(npcData == null) return false;
                     if(teamData == null) return false;
-                    if(npcData.teamId != teamData.getId()) return false;
+                    if(npcData.getTeamId() != teamData.getId()) return false;
                     return true;
                 })
                 .onEnter(() -> isOnTeam = false)
@@ -81,20 +82,20 @@ public class NpcDialogue extends DialogueGraph<String, String> {
                     .canEnterIf(() -> {
                         if(npcData == null) return false;
                         if(teamData == null) return false;
-                        if(npcData.teamId != teamData.getId()) return false;
-                        List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                        if(npcData.getTeamId() != teamData.getId()) return false;
+                        List<Integer> hasRoles = teamData.getRolesOf(npcData.getId());
                         if(hasRoles.size() == teamData.getRoles().size()) return false;
                         return true;
                     });
                 if(teamData == null) return tasksNode;
                 if(npcData == null) return tasksNode;
-                List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                List<Integer> hasRoles = teamData.getRolesOf(npcData.getId());
                 for(NpcRole role : teamData.getRoles()) {
                     if(hasRoles.contains(role.getId())) continue;
                     tasksNode.withTransition(role.getName(), 
                         createNode("Okay, I'll do " + role.getName() + ".")
                             .onEnter(() -> {
-                                Messages.sendToServer(new ToggleNpcHasRoleMsg(teamData.getId(), role.getId(), npcData.npcId));
+                                Messages.sendToServer(new ToggleNpcHasRoleMsg(teamData.getId(), role.getId(), npcData.getId()));
                             })
                             .withTransition("Great!", root)
                     );
@@ -110,20 +111,20 @@ public class NpcDialogue extends DialogueGraph<String, String> {
                     .canEnterIf(() -> {
                         if(npcData == null) return false;
                         if(teamData == null) return false;
-                        if(npcData.teamId != teamData.getId()) return false;
-                        List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                        if(npcData.getTeamId() != teamData.getId()) return false;
+                        List<Integer> hasRoles = teamData.getRolesOf(npcData.getId());
                         if(hasRoles.size() == 0) return false;
                         return true;
                     });
                 if(teamData == null) return tasksNode;
                 if(npcData == null) return tasksNode;
-                List<Integer> hasRoles = teamData.getRolesOf(npcData.npcId);
+                List<Integer> hasRoles = teamData.getRolesOf(npcData.getId());
                 for(NpcRole role : teamData.getRoles()) {
                     if(!hasRoles.contains(role.getId())) continue;
                     tasksNode.withTransition(role.getName(), 
                         createNode("Okay, I wont do " + role.getName() + " anymore.")
                             .onEnter(() -> {
-                                Messages.sendToServer(new ToggleNpcHasRoleMsg(teamData.getId(), role.getId(), npcData.npcId));
+                                Messages.sendToServer(new ToggleNpcHasRoleMsg(teamData.getId(), role.getId(), npcData.getId()));
                             })
                             .withTransition("Great!", root)
                     );

@@ -71,6 +71,7 @@ public class RolesExplorerWidget extends ModWidget {
     }
 
     public void setTeam(NpcTeam team) {
+        boolean sameTeam = this.team != null && this.team.getId() == team.getId();
         this.team = team;
         rolesList.clearChildren();
         for(NpcRole role : team.getRoles()) {
@@ -78,6 +79,10 @@ public class RolesExplorerWidget extends ModWidget {
                 this.selectedRole = selectedRole;
                 roleEditor.setRole(team, selectedRole);
             });
+            if(sameTeam && this.selectedRole != null && this.selectedRole.getId() == role.getId()) {
+                this.selectedRole = role;
+                roleEditor.setRole(team, selectedRole);
+            }
         }
     }
 }

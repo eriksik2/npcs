@@ -77,18 +77,17 @@ public class AreaDesignatorScreen extends ModWidgetScreen {
     @Override
     protected void onDeinit() {
         if(teamSubscription != null) {
-            teamSubscription.deinit();
+            teamSubscription.unsubscribe();
             teamSubscription = null;
         }
     }
 
     public void onInit() {
         if(teamSubscription != null) {
-            teamSubscription.deinit();
+            teamSubscription.unsubscribe();
             teamSubscription = null;
         }
-        teamSubscription = teamBroker.subscribe(teamId);
-        teamSubscription.addListener(this::onTeamUpdate);
+        teamSubscription = teamBroker.subscribe(teamId, this::onTeamUpdate);
     }
 
     private void onTeamUpdate(NpcTeam team) {

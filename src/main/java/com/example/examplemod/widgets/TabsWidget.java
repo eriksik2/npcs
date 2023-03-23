@@ -39,6 +39,9 @@ public class TabsWidget extends ModWidget {
     @Override
     public void onRelayoutPre() {
         tabButtons.clear();
+        for(ModWidget tab : tabs) {
+            tab.setParent(null);
+        }
         clearChildren();
         buttonsWidth = 0;
         float buttonStep = getInnerWidth() / tabs.size();

@@ -9,15 +9,15 @@ public class ServerSubscription<TData extends Versionable> {
     private final SubscriptionBroker<TData> manager;
     private final Integer dataId;
     private DataVersion dataVersion;
-    private final ArrayList<Consumer<TData>> consumers = new ArrayList<>();
+    private final Consumer<TData> consumer;
     
-    public ServerSubscription(SubscriptionBroker<TData> manager, Integer dataId) {
+    public ServerSubscription(SubscriptionBroker<TData> manager, Integer dataId, Consumer<TData> consumer) {
         this.manager = manager;
         this.dataId = dataId;
+        this.consumer = consumer;
     }
 
-    public void deinit() {
-        consumers.clear();
+    public void unsubscribe() {
         manager.unsubscribe(this);
     }
 
@@ -25,21 +25,11 @@ public class ServerSubscription<TData extends Versionable> {
         DataVersion version = data.getVersion();
         if(dataVersion != null && dataVersion.equals(version)) return;
         dataVersion = version;
-        for(Consumer<TData> consumer : consumers) {
-            consumer.accept(data);
-        }
+        consumer.accept(data);
     }
 
     public Integer getDataId() {
         return dataId;
-    }
-
-    public void addListener(Consumer<TData> consumer) {
-        consumers.add(consumer);
-    }
-
-    public void removeListener(Consumer<TData> consumer) {
-        consumers.remove(consumer);
     }
 
 }

@@ -109,8 +109,8 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
 
     private void recalculateInfo() {
         selectedNpcData = npcDataBroker.get(selectedNpcId);
-        if(selectedNpcData != null && selectedNpcData.teamId != null) {
-            selectedNpcTeam = npcTeamBroker.get(selectedNpcData.teamId);
+        if(selectedNpcData != null && selectedNpcData.getTeamId() != null) {
+            selectedNpcTeam = npcTeamBroker.get(selectedNpcData.getTeamId());
         } else {
             selectedNpcTeam = null;
         }
@@ -328,7 +328,7 @@ public class EncyclopediaScreen extends AbstractContainerScreen<EncyclopediaMenu
         } else {
             NpcData data = selectedNpcData;
             if(data != null) {
-                font.draw(matrixStack, data.name, leftPos + PROFILE_X+8*face_scale + 2, topPos + PROFILE_Y, 0xFFFFFF);
+                font.draw(matrixStack, data.getName(), leftPos + PROFILE_X+8*face_scale + 2, topPos + PROFILE_Y, 0xFFFFFF);
             }
         }
     }

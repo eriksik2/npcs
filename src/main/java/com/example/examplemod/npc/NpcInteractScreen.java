@@ -8,9 +8,11 @@ import com.example.examplemod.networking.Messages;
 import com.example.examplemod.networking.NpcDataServerToClientBroker;
 import com.example.examplemod.networking.NpcTeamServerToClientBroker;
 import com.example.examplemod.networking.ToggleTrackingNpc;
+import com.example.examplemod.networking.subscribe.ServerSubscription;
 import com.example.examplemod.npc.dialogue.DialogueTransition;
 import com.example.examplemod.npc.dialogue.NpcDialogue;
 import com.example.examplemod.npc.team.NpcTeam;
+import com.example.examplemod.npc.team.TeamSubscriptionBroker;
 import com.example.examplemod.setup.Registration;
 import com.example.examplemod.widgets.ButtonWidget;
 import com.example.examplemod.widgets.ModWidget;
@@ -54,13 +56,18 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
     private final NpcScreenRandomLookHelper lookHelper;
     private final NpcDialogue npcDialogue;
     private ArrayList<DialogueTransition<String, String>> dialogueTransitions = new ArrayList<>();
+    private boolean dialogueIsDirty = false;
 
     private final ResourceLocation GUI = new ResourceLocation(ExampleMod.MODID, "textures/gui/npc_interact_gui.png");
 
-    private final NpcTeamServerToClientBroker npcTeamBroker = Registration.NPC_TEAM_BROKER.get();
-    private final NpcDataServerToClientBroker npcDataBroker = Registration.NPC_DATA_BROKER.get();
+    private final TeamSubscriptionBroker teamSubscriptionBroker = Registration.TEAM_SUBSCRIPTION_BROKER.get();
+    private final NpcDataSubscriptionBroker npcDataSubscriptionBroker = Registration.NPC_DATA_SUBSCRIPTION_BROKER.get();
+    private ServerSubscription<NpcTeam> teamSubscription;
+    private ServerSubscription<NpcData> npcDataSubscription;
     private NpcData npcData;
     private NpcTeam teamData;
+    private Integer npcId;
+    private Integer teamId;
 
     
     private NpcPreviewWidget npcName;
@@ -77,6 +84,47 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
         npcDialogue = new NpcDialogue();
         npcDialogue.setOnTransition(this::onDialogueTransition);
     }
+
+    @Override
+    protected void onInit() {
+        super.onInit();
+        if(teamSubscription != null) {
+            teamSubscription.unsubscribe();
+            teamSubscription = null;
+        }
+        teamSubscription = teamSubscriptionBroker.subscribe(menu.getTeamId(), this::onNewTeam);
+        if(npcDataSubscription != null) {
+            npcDataSubscription.unsubscribe();
+            npcDataSubscription = null;
+        }
+        npcDataSubscription = npcDataSubscriptionBroker.subscribe(menu.getNpcId(), this::onNewNpcData);
+    }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+        if(teamSubscription != null) {
+            teamSubscription.unsubscribe();
+            teamSubscription = null;
+        }
+        if(npcDataSubscription != null) {
+            npcDataSubscription.unsubscribe();
+            npcDataSubscription = null;
+        }
+    }
+
+    public void onNewTeam(NpcTeam team) {
+        teamData = team;
+        npcDialogue.setTeamData(teamData);
+        dialogueIsDirty = true;
+    }
+
+    public void onNewNpcData(NpcData data) {
+        npcData = data;
+        npcDialogue.setNpcData(npcData);
+        npcName.setNpcId(npcData.getId());
+        dialogueIsDirty = true;
+    }
     
     @Override
     protected void registerWidgets(ModWidget root) {
@@ -92,7 +140,7 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
         trackButton.setPosition(leftPos + TRACK_BUTTON_X, topPos + TRACK_BUTTON_Y);
         trackButton.setOnClick(() -> {
             if(npcData == null) return;
-            ToggleTrackingNpc message = new ToggleTrackingNpc(npcData.npcId);
+            ToggleTrackingNpc message = new ToggleTrackingNpc(npcData.getId());
             Messages.sendToServer(message);
         });
 
@@ -116,6 +164,7 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
 
     public void onDialogueTransition(String from, String transition, String to) {
         responseText.setText(to);
+        dialogueIsDirty = true;
     }
 
     @Override
@@ -130,11 +179,12 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
     public void onRender(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         npcName.setColor(0x000000);
 
-        var transitions = new ArrayList<DialogueTransition<String, String>>(npcDialogue.getTransitions());
-        var thc = transitions.stream().map(a -> a.hashCode()).reduce((a, b) -> a ^ b).orElse(0);
-        var dhc = dialogueTransitions == null ? 0 : dialogueTransitions.stream().map(a -> a.hashCode()).reduce((a, b) -> a ^ b).orElse(0);
-        if(dialogueTransitions == null || dhc != thc) {
-            dialogueTransitions = transitions;
+        //var transitions = new ArrayList<DialogueTransition<String, String>>(npcDialogue.getTransitions());
+        //var thc = transitions.stream().map(a -> a.hashCode()).reduce((a, b) -> a ^ b).orElse(0);
+        //var dhc = dialogueTransitions == null ? 0 : dialogueTransitions.stream().map(a -> a.hashCode()).reduce((a, b) -> a ^ b).orElse(0);
+        if(dialogueTransitions == null || dialogueIsDirty) {
+            dialogueIsDirty = false;
+            dialogueTransitions = new ArrayList<DialogueTransition<String, String>>(npcDialogue.getTransitions());
             dialogueList.clearChildren();
             for(var tran : dialogueTransitions) {
                 String optText = tran.getData();
@@ -143,24 +193,44 @@ public class NpcInteractScreen extends ModWidgetContainerScreen<NpcInteractMenu>
                 btn.setWidth(dialogueList.getInnerWidth());
                 btn.setOnClick(() -> {
                     npcDialogue.makeTransition(tran);
+                    dialogueIsDirty = true;
                 });
             }
         }
 
-        var newNpcData = npcDataBroker.get(menu.getNpcId());
-        if(npcData == null || npcData != newNpcData) {
-            npcData = newNpcData;
-            npcDialogue.setNpcData(npcData);
-            if(npcData != null) {
-                npcName.setNpcId(npcData.npcId);
+        var newNpcId = menu.getNpcId();
+        if(npcId == null || npcId != newNpcId) {
+            npcId = newNpcId;
+            if(npcDataSubscription != null) {
+                npcDataSubscription.unsubscribe();
+                npcDataSubscription = null;
             }
+            npcDataSubscription = npcDataSubscriptionBroker.subscribe(npcId, this::onNewNpcData);
         }
 
-        var newTeamData = npcTeamBroker.get(menu.getTeamId());
-        if(teamData == null || teamData != newTeamData) {
-            teamData = newTeamData;
-            npcDialogue.setTeamData(teamData);
+        var newTeamId = menu.getTeamId();
+        if(teamId == null || teamId != newTeamId) {
+            teamId = newTeamId;
+            if(teamSubscription != null) {
+                teamSubscription.unsubscribe();
+                teamSubscription = null;
+            }
+            teamSubscription = teamSubscriptionBroker.subscribe(teamId, this::onNewTeam);
         }
+
+        //var newNpcData = npcDataBroker.get(menu.getNpcId());
+        //if(npcData == null || npcData != newNpcData) {
+        //    npcData = newNpcData;
+        //    npcDialogue.setNpcData(npcData);
+        //    if(npcData != null) {
+        //        npcName.setNpcId(npcData.npcId);
+        //    }
+        //}
+        //var newTeamData = npcTeamBroker.get(menu.getTeamId());
+        //if(teamData == null || teamData != newTeamData) {
+        //    teamData = newTeamData;
+        //    npcDialogue.setTeamData(teamData);
+        //}
 
         lookHelper.tick();
 

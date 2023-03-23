@@ -1,11 +1,9 @@
 package com.example.examplemod.npc;
 
-import com.example.examplemod.ExampleMod;
 import com.example.examplemod.networking.subscribe.SubscriptionBroker;
 import com.example.examplemod.setup.Registration;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 public class NpcDataSubscriptionBroker extends SubscriptionBroker<NpcData> {
@@ -29,7 +27,7 @@ public class NpcDataSubscriptionBroker extends SubscriptionBroker<NpcData> {
 
     @Override
     public NpcData fromBytes(FriendlyByteBuf buf) {
-        return new NpcData(buf);
+        return new NpcData(buf, null);
     }
     
 }

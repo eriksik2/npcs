@@ -40,11 +40,11 @@ public abstract class ModWidgetContainerScreen<T extends AbstractContainerMenu> 
     @Override
     protected void init() {
         super.init();
-        onInit();
         root.clearChildren();
         registerWidgets(root);
         root.setSize(width, height);
         root.init();
+        onInit();
     }
 
     protected void onInit() {

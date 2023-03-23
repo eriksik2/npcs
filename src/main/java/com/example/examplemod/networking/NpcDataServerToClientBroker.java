@@ -36,7 +36,7 @@ public class NpcDataServerToClientBroker extends ServerToClientBroker<NpcData> {
 
     @Override
     public NpcData fromBytes(FriendlyByteBuf buf) {
-        return new NpcData(buf);
+        return new NpcData(buf, null);
     }
     
 }

@@ -23,13 +23,12 @@ public class ClientEditingArea {
         if(teamSubscriptionBroker == null) teamSubscriptionBroker = Registration.TEAM_SUBSCRIPTION_BROKER.get();
 
         if(teamSubscription != null) {
-            teamSubscription.deinit();
+            teamSubscription.unsubscribe();
             teamSubscription = null;
         }
-        teamSubscription = teamSubscriptionBroker.subscribe(teamId);
-        teamSubscription.addListener(ClientEditingArea::onTeamUpdate);
         ClientEditingArea.teamId = teamId;
         ClientEditingArea.areaId = areaId;
+        teamSubscription = teamSubscriptionBroker.subscribe(teamId, ClientEditingArea::onTeamUpdate);
     }
 
     private static synchronized void onTeamUpdate(NpcTeam team) {

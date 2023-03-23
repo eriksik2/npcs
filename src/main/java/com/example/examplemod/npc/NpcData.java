@@ -3,6 +3,7 @@ package com.example.examplemod.npc;
 import com.example.examplemod.generator.NpcGenerator;
 import com.example.examplemod.networking.subscribe.DataVersion;
 import com.example.examplemod.networking.subscribe.Versionable;
+import com.example.examplemod.setup.Registration;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -15,22 +16,25 @@ public class NpcData implements Versionable {
     }
 
     private boolean _isInitialized = true;
-    public DataVersion version;
-    public int npcId;
-    public Gender gender;
-    public String name;
-    public Integer teamId;
+    private NpcManager manager;
+    private DataVersion version;
+    private int npcId;
+    private Gender gender;
+    private String name;
+    private Integer teamId;
 
     public NpcData() {
         _isInitialized = false;
     }
 
-    public NpcData(Gender gender, String name) {
+    public NpcData(Gender gender, String name, NpcManager manager) {
         this.gender = gender;
         this.name = name;
+        this.manager = manager;
     }
 
-    public NpcData(CompoundTag data) {
+    public NpcData(CompoundTag data, NpcManager manager) {
+        this.manager = manager;
         version = new DataVersion(data.getCompound("version"));
         npcId = data.getInt("npcId");
         gender = Gender.values()[data.getInt("gender")];
@@ -52,7 +56,8 @@ public class NpcData implements Versionable {
         return data;
     }
 
-    public NpcData(FriendlyByteBuf buf) {
+    public NpcData(FriendlyByteBuf buf, NpcManager manager) {
+        this.manager = manager;
         version = new DataVersion(buf);
         npcId = buf.readInt();
         gender = buf.readEnum(Gender.class);
@@ -77,7 +82,7 @@ public class NpcData implements Versionable {
 
     public NpcData copy() {
         if(!_isInitialized) return new NpcData();
-        NpcData data = new NpcData(gender, name);
+        NpcData data = new NpcData(gender, name, manager);
         data.npcId = npcId;
         data.teamId = teamId;
         return data;
@@ -109,6 +114,53 @@ public class NpcData implements Versionable {
         hash ^= teamId == null ? 0 : teamId.hashCode();
         hash ^= npcId;
         return hash;
+    }
+
+    public void setDirty() {
+        version.markDirty();
+        Registration.NPC_DATA_SUBSCRIPTION_BROKER.get().publish(getId(), this);
+        if(manager != null) manager.setDirty();
+    }
+
+    public int getId() {
+        return npcId;
+    }
+
+    public void setId(int id) {
+        npcId = id;
+        version = new DataVersion(id);
+        setDirty();
+    }
+
+    public void setManager(NpcManager manager) {
+        this.manager = manager;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+        setDirty();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        setDirty();
+    }
+
+    public Integer getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Integer teamId) {
+        this.teamId = teamId;
+        setDirty();
     }
 
     public boolean isInitialized() {

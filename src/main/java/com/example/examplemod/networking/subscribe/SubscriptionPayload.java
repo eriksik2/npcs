@@ -3,7 +3,6 @@ package com.example.examplemod.networking.subscribe;
 import java.util.function.Supplier;
 
 import com.example.examplemod.networking.Message;
-import com.example.examplemod.networking.ServerToClientBroker;
 import com.example.examplemod.setup.Registration;
 
 import net.minecraft.network.FriendlyByteBuf;

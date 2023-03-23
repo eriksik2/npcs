@@ -52,7 +52,10 @@ public class NpcPreviewWidget extends ModWidget {
 
     @Override
     public void onDeinit() {
-        if(subscription != null) subscription.deinit();
+        if(subscription != null) {
+            subscription.unsubscribe();
+            subscription = null;
+        }
     }
 
     public void setShowFace(boolean showFace) {
@@ -65,15 +68,17 @@ public class NpcPreviewWidget extends ModWidget {
     }
 
     public void setNpcId(Integer npcId) {
-        if(subscription != null) subscription.deinit();
-        subscription = subscriptionBroker.subscribe(npcId);
-        subscription.addListener(this::onNpcDataChanged);
+        if(subscription != null) {
+            subscription.unsubscribe();
+            subscription = null;
+        }
+        subscription = subscriptionBroker.subscribe(npcId, this::onNpcDataChanged);
     }
 
     public void onNpcDataChanged(NpcData data) {
         this.npcData = data;
         textureWidget.setTexture(NpcRenderer.getTextureLocation(new NpcRenderData(npcData)), 64, 32);
-        textWidget.setText(npcData.name);
+        textWidget.setText(npcData.getName());
         setWidth(textWidget.getX() + textWidget.getWidth());
         setLayoutDirty();
     }
@@ -90,7 +95,7 @@ public class NpcPreviewWidget extends ModWidget {
         if(!isMouseOver(mouseX, mouseY)) return false;
         if(button == 0) {
             if(npcData != null) {
-                Messages.sendToServer(new OpenEncyclopedia(npcData.npcId));
+                Messages.sendToServer(new OpenEncyclopedia(npcData.getId()));
             }
             return true;
         }
