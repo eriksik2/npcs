@@ -38,6 +38,10 @@ public class AbstractWidgetWrapper<T extends AbstractWidget> extends ModWidget {
         this.wrappedWidget.setY(getGlobalY());
     }
 
+    public T getWrappedWidget() {
+        return wrappedWidget;
+    }
+
     @Override
     public int getPadding() {
         return 0;

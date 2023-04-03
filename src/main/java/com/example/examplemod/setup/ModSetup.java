@@ -12,6 +12,7 @@ import com.example.examplemod.tracking.TrackingEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -59,6 +60,9 @@ public class ModSetup {
 
     @SubscribeEvent
     public static void onAttributeCreate(EntityAttributeCreationEvent event) {
-        event.put(Registration.NPC_ENTITY.get(), NpcEntity.prepareAttributes().build());
+        event.put(Registration.NPC_ENTITY.get(), NpcEntity.prepareAttributes()
+            .add(Attributes.ATTACK_DAMAGE, 1.0D)
+            .add(Attributes.ATTACK_KNOCKBACK, 0.25D)
+            .build());
     }
 }

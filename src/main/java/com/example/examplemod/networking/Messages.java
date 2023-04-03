@@ -11,6 +11,7 @@ import com.example.examplemod.npc.area.UpdateAreaPositionMsg;
 import com.example.examplemod.npc.role.RemoveTeamRoleMsg;
 import com.example.examplemod.npc.role.ToggleNpcHasRoleMsg;
 import com.example.examplemod.npc.task.AddTaskToRoleMsg;
+import com.example.examplemod.npc.task.SetTaskParameterValueMsg;
 import com.mojang.realmsclient.client.Request.Get;
 
 import ca.weblite.objc.Client;
@@ -128,6 +129,12 @@ public class Messages {
                 .decoder(AddTaskToRoleMsg::new)
                 .encoder(AddTaskToRoleMsg::toBytes)
                 .consumerMainThread(AddTaskToRoleMsg::handle)
+                .add();
+
+        net.messageBuilder(SetTaskParameterValueMsg.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(SetTaskParameterValueMsg::new)
+                .encoder(SetTaskParameterValueMsg::toBytes)
+                .consumerMainThread(SetTaskParameterValueMsg::handle)
                 .add();
 
         net.messageBuilder(SyncTrackingToClient.class, id(), NetworkDirection.PLAY_TO_CLIENT)

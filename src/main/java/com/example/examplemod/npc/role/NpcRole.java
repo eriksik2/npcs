@@ -79,6 +79,10 @@ public class NpcRole {
         return hash;
     }
 
+    public NpcTeam getManager() {
+        return manager;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -105,6 +109,13 @@ public class NpcRole {
 
     public ArrayList<NpcTask> getTasks() {
         return tasks;
+    }
+
+    public NpcTask getTask(int id) {
+        for(NpcTask task : tasks) {
+            if(task.getId() == id) return task;
+        }
+        return null;
     }
 
     public NpcTask addTask(TaskType taskType) {

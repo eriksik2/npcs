@@ -18,9 +18,6 @@ public class TaskEditorWidget extends ModWidget {
         drawer = new DrawerWidget(this);
         drawer.init();
         drawer.setHeader(new TextWidget(null, ""));
-        ModWidget cnt = new ModWidget(drawer);
-        cnt.setSize(50, 50);
-        new TextWidget(cnt, "Test content");
     }
 
     @Override
@@ -37,6 +34,22 @@ public class TaskEditorWidget extends ModWidget {
     }
     
     public void setTask(NpcTask task) {
+        boolean isSame = this.task != null
+            && this.task.getId() == task.getId()
+            && this.task.getManager().getId() == task.getManager().getId()
+            && this.task.getManager().getManager().getId() == task.getManager().getManager().getId();
         this.task = task;
+
+        if(!isSame) {
+            drawer.clearChildren();
+            for(TaskParameterType<?, ?> paramType : task.getType().getParameters()) {
+                TaskParameterWidget widget = new TaskParameterWidget(drawer);
+                widget.init();
+            }
+        }
+        for(int i = 0; i < task.getType().getParameters().size(); i++) {
+            TaskParameterWidget widget = (TaskParameterWidget) drawer.getChildren().get(i);
+            widget.setParameter(task, task.getType().getParameters().get(i));
+        }
     }
 }

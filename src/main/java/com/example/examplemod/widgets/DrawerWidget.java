@@ -1,5 +1,7 @@
 package com.example.examplemod.widgets;
 
+import java.util.List;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -111,6 +113,11 @@ public class DrawerWidget extends ModWidget {
     @Override
     public <T extends AbstractWidget> AbstractWidgetWrapper<T> addChild(T child) {
         return content.addChild(child);
+    }
+
+    @Override
+    public List<ModWidget> getChildren() {
+        return content.getChildren();
     }
 
     @Override

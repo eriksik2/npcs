@@ -1,6 +1,7 @@
 package com.example.examplemod.npc.role;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.example.examplemod.networking.Messages;
 import com.example.examplemod.npc.NpcData;
@@ -66,7 +67,7 @@ public class RoleEditorWidget extends ModWidget {
 
         addTaskButtons = new RowLayoutWidget(scrollable);
         addTaskButtons.setWrap(true);
-        addTaskButtons.setGap(2);
+        addTaskButtons.setGap(4);
         addTaskButtons.setRowGap(2);
         Collection<RegistryObject<TaskType>> taskTypes = TaskRegistration.TASK_TYPES.getEntries();
         for(RegistryObject<TaskType> taskType : taskTypes) {
@@ -153,14 +154,18 @@ public class RoleEditorWidget extends ModWidget {
     }
 
     public void setRole(NpcTeam team, NpcRole role) {
-        this.team = team;
-        this.role = role;
+        boolean isSame = this.team != null
+            && this.role != null
+            && this.team.getId() == team.getId()
+            && this.role.getId() == role.getId();
 
         roleAreasEditor.setRole(team.getId(), role.getId());
-        npcList.clearChildren();
-        taskList.clearChildren();
-        if(role != null) {
-            for(Integer npc : team.getNpcsOf(role.getId())) {
+        
+        List<Integer> npcsOfRole = team.getNpcsOf(role.getId());
+        List<NpcTask> tasksOfRole = role.getTasks();
+        if(!isSame || team.getNpcsOf(role.getId()).size() != npcList.getChildren().size()) {
+            npcList.clearChildren();
+            for(Integer npc : npcsOfRole) {
                 NpcPreviewWidget widget = new NpcPreviewWidget(npcList) {
                     @Override
                     public void onRelayoutPre() {
@@ -169,9 +174,12 @@ public class RoleEditorWidget extends ModWidget {
                     }
                 };
                 widget.init();
-                widget.setNpcId(npc);
             }
-            for(NpcTask task : role.getTasks()) {
+            
+        }
+        if(!isSame || role.getTasks().size() != taskList.getChildren().size()) {
+            taskList.clearChildren();
+            for(NpcTask task : tasksOfRole) {
                 TaskEditorWidget widget = new TaskEditorWidget(taskList) {
                     @Override
                     public void onRelayoutPre() {
@@ -180,9 +188,18 @@ public class RoleEditorWidget extends ModWidget {
                     }
                 };
                 widget.init();
-                widget.setTask(task);
             }
         }
+        for(int i = 0; i < npcsOfRole.size(); i++) {
+            NpcPreviewWidget widget = (NpcPreviewWidget) npcList.getChildren().get(i);
+            widget.setNpcId(npcsOfRole.get(i));
+        }
+        for(int i = 0; i < tasksOfRole.size(); i++) {
+            TaskEditorWidget widget = (TaskEditorWidget) taskList.getChildren().get(i);
+            widget.setTask(tasksOfRole.get(i));
+        }
+        this.team = team;
+        this.role = role;
         setLayoutDirty();
     }
     
