@@ -47,11 +47,22 @@ public class DrawerWidget extends ModWidget {
         setHeader(new ModWidget(null));
         headerArrow = new TextWidget(header, ">");
         content = super.addChild(new ModWidget(null) {
+
+            @Override
+            public void onRelayoutPost() {
+                layoutShrinkwrapChildren();
+            }
+
             @Override
             public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
                 enableScissor(getGlobalX(), getGlobalY(), getGlobalX()+getInnerWidth(), getGlobalY()+getInnerHeight());
                 super.render(stack, mouseX, mouseY, partialTicks);
                 disableScissor();
+            }
+
+            @Override
+            public boolean layoutBasedOnChildren() {
+                return true;
             }
         });
     }
@@ -67,6 +78,9 @@ public class DrawerWidget extends ModWidget {
         content.setY(header.getHeight());
         content.layoutShrinkwrapChildren();
         contentHeight = content.getHeight();
+        if(open) {
+            targetHeight = contentHeight;
+        }
         content.setX(10);
         content.setWidth(getInnerWidth() - 10);
         content.setHeight(Math.round(height));
@@ -123,6 +137,11 @@ public class DrawerWidget extends ModWidget {
     @Override
     public void clearChildren() {
         content.clearChildren();
+    }
+
+    @Override
+    public boolean layoutBasedOnChildren() {
+        return true;
     }
     
 }

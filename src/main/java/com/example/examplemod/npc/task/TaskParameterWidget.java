@@ -25,6 +25,14 @@ public class TaskParameterWidget extends ModWidget {
     public void onInit() {
         nameWidget = new TextWidget(this, "");
         content = new ModWidget(this) {
+
+            @Override
+            public void onRelayoutPre() {
+                for(ModWidget child : getChildren()) {
+                    child.layoutFillX();
+                }
+            }
+
             @Override
             public void onRelayoutPost() {
                 layoutShrinkwrapChildren();
@@ -33,20 +41,23 @@ public class TaskParameterWidget extends ModWidget {
         errorWidget = new TextWidget(this, "");
         errorWidget.setActive(false);
         errorWidget.setColor(0xFFFF0000);
+        errorWidget.setWrap(true);
     }
 
     @Override
     public void onRelayoutPre() {
         layoutFillRemaining();
-        nameWidget.setPosition(0, 0);
-        content.setPosition(nameWidget.getWidth() + 4, 0);
+        content.setPosition(nameWidget.getWidth() + 4, 2);
         content.setWidth(getInnerWidth() - nameWidget.getWidth() - 4);
+        errorWidget.setWidth(getInnerWidth());
+        errorWidget.setY(content.getY() + content.getHeight() + 2);
     }
     
     @Override
     public void onRelayoutPost() {
+        nameWidget.setY(content.getY() + (content.getHeight() - nameWidget.getHeight()) / 2);
+        //errorWidget.setY(getInnerHeight());
         layoutShrinkwrapChildren();
-        nameWidget.layoutCenterY();
     }
 
     public <TValue, TOutput> void setParameter(NpcTask task, TaskParameterType<TValue, TOutput> parameter) {
@@ -57,8 +68,9 @@ public class TaskParameterWidget extends ModWidget {
         content.clearChildren();
         nameWidget.setText(parameter.getName() + ":");
         valueWidget = parameter.buildWidget(value, (newValue) -> {
-            if(value != null && value.equals(newValue)) return;
+            //if(value != null && value.equals(newValue)) return;
             if(newValue == null) {
+                errorWidget.setActive(false);
                 return;
             }
             this.inputValue = newValue;
@@ -69,6 +81,7 @@ public class TaskParameterWidget extends ModWidget {
                 return;
             } else {
                 errorWidget.setActive(false);
+                errorWidget.setText("");
             }
             Messages.sendToServer(new SetTaskParameterValueMsg(task, parameter.getSlot(), newValue));
         });
