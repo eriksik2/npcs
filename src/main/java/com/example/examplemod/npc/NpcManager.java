@@ -1,6 +1,7 @@
 package com.example.examplemod.npc;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,6 +28,8 @@ public class NpcManager extends SavedData {
     public HashMap<Integer, NpcEntity> loadedNpcs;
     public HashMap<Integer, PassiveNpcData> unloadedNpcs;
 
+    private NpcTaskProvider taskProvider;
+
     // This function can be used to get access to the data for a given level. It can only be called server-side!
     @Nonnull
     public static NpcManager get(Level level) {
@@ -46,6 +49,7 @@ public class NpcManager extends SavedData {
         teams = new HashMap<Integer, NpcTeam>();
         loadedNpcs = new HashMap<Integer, NpcEntity>();
         unloadedNpcs = new HashMap<Integer, PassiveNpcData>();
+        taskProvider = new NpcTaskProvider(this);
     }
 
     // This constructor is called when loading from disk
@@ -67,6 +71,7 @@ public class NpcManager extends SavedData {
             unloadedNpcs.put(key, new PassiveNpcData((CompoundTag)npcTag, this));
         }
         loadedNpcs = new HashMap<Integer, NpcEntity>();
+        taskProvider = new NpcTaskProvider(this);
     }
 
     @Override
@@ -211,6 +216,10 @@ public class NpcManager extends SavedData {
         return team;
     }
 
+    public Collection<NpcTeam> getTeams() {
+        return teams.values();
+    }
+
     public NpcTeam getTeam(Integer teamId) {
         return teams.get(teamId);
     }
@@ -247,5 +256,9 @@ public class NpcManager extends SavedData {
             }
         }
         return teamIds;
+    }
+
+    public NpcTaskProvider getTaskProvider() {
+        return taskProvider;
     }
 }

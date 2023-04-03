@@ -23,6 +23,16 @@ public class NpcData implements Versionable {
     private String name;
     private Integer teamId;
 
+    /* Stats */
+    private float stamina = 0; // more stamina -> less physical fatigue
+    private float mindfulness = 0; // more mindfulness -> less mental fatigue
+    /* Stats */
+
+    /* Moods */
+    private float physicalFatigue = 0; // Work alot -> physical fatigue -> sleep -> no physical fatigue
+    private float mentalFatigue = 0; // Work alot -> mental fatigue -> recreation -> no mental fatigue
+    /* Moods */
+
     public NpcData() {
         _isInitialized = false;
     }

@@ -14,8 +14,10 @@ import com.example.examplemod.networking.subscribe.DataVersion;
 import com.example.examplemod.networking.subscribe.Versionable;
 import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.NpcManager;
+import com.example.examplemod.npc.NpcTaskProvider;
 import com.example.examplemod.npc.area.NpcArea;
 import com.example.examplemod.npc.role.NpcRole;
+import com.example.examplemod.npc.task.NpcTask;
 import com.example.examplemod.setup.Registration;
 
 import net.minecraft.nbt.CompoundTag;
@@ -268,6 +270,17 @@ public class NpcTeam implements Versionable {
         return hash;
     }
 
+    public void onRemove() {
+        NpcTaskProvider provider = manager.getTaskProvider();
+        for(NpcRole role : roles) {
+            for(Integer npcId : npcAssignedRoles.getNpcs(role.getId())) {
+                for(NpcTask task : role.getTasks()) {
+                    provider.unregisterTask(npcId, task);
+                }
+            }
+        }
+    }
+
     public void setDirty() {
         version.markDirty();
         Registration.TEAM_SUBSCRIPTION_BROKER.get().publish(id, this);
@@ -324,10 +337,20 @@ public class NpcTeam implements Versionable {
     }
 
     public NpcTeam removeNpcId(Integer npcId) {
+        if(manager == null) throw new RuntimeException("NpcTeam.removeNpcId presumably called on the client.");
         boolean didRemove = npcMembers.remove(npcId);
         if(!didRemove) return this;
+
+        NpcTaskProvider provider = manager.getTaskProvider();
+        
+        for(Integer roleId : npcAssignedRoles.getRoles(npcId)) {
+            NpcRole role = getRole(roleId);
+            for(NpcTask task : role.getTasks()) {
+                provider.unregisterTask(npcId, task);
+            }
+        }
+
         npcAssignedRoles.clearRoles(npcId);
-        if(manager == null) throw new RuntimeException("NpcTeam.removeNpcId presumably called on the client.");
         setDirty();
         return this;
     }
@@ -352,17 +375,31 @@ public class NpcTeam implements Versionable {
     }
 
     public NpcTeam assignRole(Integer npcId, Integer roleId) {
+        if(manager == null) throw new RuntimeException("NpcTeam.assignRole presumably called on the client.");
+
+        NpcRole role = roles.stream().filter(r -> r.getId() == roleId).findFirst().orElse(null);
+        NpcTaskProvider provider = manager.getTaskProvider();
+        for(NpcTask task : role.getTasks()) {
+            provider.registerTask(npcId, task);
+        }
+
         boolean didAdd = npcAssignedRoles.addRole(npcId, roleId);
         if(!didAdd) return this;
-        if(manager == null) throw new RuntimeException("NpcTeam.assignRole presumably called on the client.");
         setDirty();
         return this;
     }
 
     public NpcTeam unassignRole(Integer npcId, Integer roleId) {
+        if(manager == null) throw new RuntimeException("NpcTeam.unassignRole presumably called on the client.");
+
+        NpcRole role = roles.stream().filter(r -> r.getId() == roleId).findFirst().orElse(null);
+        NpcTaskProvider provider = manager.getTaskProvider();
+        for(NpcTask task : role.getTasks()) {
+            provider.unregisterTask(npcId, task);
+        }
+
         boolean didRemove = npcAssignedRoles.removeRole(npcId, roleId);
         if(!didRemove) return this;
-        if(manager == null) throw new RuntimeException("NpcTeam.unassignRole presumably called on the client.");
         setDirty();
         return this;
     }
@@ -377,13 +414,37 @@ public class NpcTeam implements Versionable {
     }
 
     public NpcTeam removeRole(int roleId) {
-        boolean didRemove = roles.removeIf(role -> role.getId() == roleId);
+        if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
+        NpcRole role = roles.stream().filter(r -> r.getId() == roleId).findFirst().orElse(null);
+        if(role == null) return this;
+        boolean didRemove = roles.remove(role);
         if(!didRemove) return this;
+
+        NpcTaskProvider provider = manager.getTaskProvider();
+        for(Integer npcId : npcAssignedRoles.getNpcs(role.getId())) {
+            for(NpcTask task : role.getTasks()) {
+                provider.unregisterTask(npcId, task);
+            }
+        }
+
         npcAssignedRoles.removeRole(roleId);
         roleAssignedAreas.removeRole(roleId);
-        if(manager == null) throw new RuntimeException("NpcTeam.removeRole presumably called on the client.");
         setDirty();
         return this;
+    }
+
+    public void taskWasAddedToRole(NpcRole role, NpcTask task) {
+        NpcTaskProvider provider = manager.getTaskProvider();
+        for(Integer npcId : npcAssignedRoles.getNpcs(role.getId())) {
+            provider.registerTask(npcId, task);
+        }
+    }
+
+    public void taskWasRemovedFromRole(NpcRole role, NpcTask task) {
+        NpcTaskProvider provider = manager.getTaskProvider();
+        for(Integer npcId : npcAssignedRoles.getNpcs(role.getId())) {
+            provider.unregisterTask(npcId, task);
+        }
     }
 
     public List<NpcArea> getAreas() {

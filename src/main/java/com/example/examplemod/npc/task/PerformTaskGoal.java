@@ -1,26 +1,24 @@
 package com.example.examplemod.npc.task;
 
-import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import com.example.examplemod.npc.NpcEntity;
 import com.example.examplemod.npc.NpcManager;
-import com.example.examplemod.npc.role.NpcRole;
-import com.example.examplemod.npc.team.NpcTeam;
+import com.example.examplemod.npc.NpcTaskProvider;
 
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.player.Player;
 
 public class PerformTaskGoal extends Goal {
 
     private NpcEntity mob;
 
-    private NpcManager manager;
-    private NpcTeam team;
-    private Player player;
+    private NpcTask currentTask;
+    private Goal currentGoal;
 
     public PerformTaskGoal(NpcEntity mob) {
         this.mob = mob;
+        this.setFlags(EnumSet.allOf(Goal.Flag.class));
     }
 
     @Override
@@ -28,43 +26,73 @@ public class PerformTaskGoal extends Goal {
         if(mob.npcData == null) {
             return false;
         }
-        manager = NpcManager.get(mob.level);
-        team = manager.getNpcTeam(mob.npcData);
-        if(getRoles().isEmpty()) {
-            return false;
+        if(currentGoal != null && currentGoal.canUse()) {
+            return true;
         }
-        List<? extends Player> players = mob.level.players();
-        if(players.isEmpty()) {
-            return false;
+        NpcManager manager = NpcManager.get(mob.level);
+        NpcTaskProvider provider = manager.getTaskProvider();
+        List<NpcTask> tasks = provider.getTasksOf(mob.npcData.getId());
+        for(NpcTask task : tasks) {
+            Goal goal = task.getType().getGoal(task, mob);
+            if(goal.canUse()) {
+                currentTask = task;
+                currentGoal = goal;
+                return true;
+            }
         }
-        player = players.get(0);
-        return true;
-    }
-
-    protected List<NpcRole> getRoles() {
-        if(mob.npcId == null || team == null) {
-            return new ArrayList<>();
-        }
-        List<Integer> roleIds = team.getRolesOf(mob.npcId);
-        if(roleIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return roleIds.stream().map(id -> team.getRole(id)).toList();
+        return false;
     }
 
     public boolean canContinueToUse() {
-        return !this.mob.getNavigation().isDone() && !this.mob.isVehicle() && canUse();
+        if(this.mob.isVehicle()) return false;
+
+        if(currentGoal == null) {
+            return canUse();
+        }
+
+        NpcManager manager = NpcManager.get(mob.level);
+        NpcTaskProvider provider = manager.getTaskProvider();
+        List<NpcTask> tasks = provider.getTasksOf(mob.npcData.getId());
+        if(!tasks.contains(currentTask)) {
+            return false;
+        }
+
+        return currentGoal.canContinueToUse();
     }
 
     @Override
     public void start() {
         super.start();
-        mob.getNavigation().moveTo(player, 1);
+        if(currentGoal != null) {
+            currentGoal.start();
+        }
     }
   
+    @Override
     public void stop() {
-        this.mob.getNavigation().stop();
+        if(currentGoal != null) {
+            currentGoal.stop();
+            currentTask = null;
+            currentGoal = null;
+        }
+
         super.stop();
+    }
+
+    @Override
+    public boolean requiresUpdateEveryTick() {
+        if(currentGoal != null) {
+            return currentGoal.requiresUpdateEveryTick();
+        }
+        return true;
+    }
+
+    @Override
+    public void tick() {
+        if(currentGoal != null) {
+            currentGoal.tick();
+        }
+        super.tick();
     }
     
 }

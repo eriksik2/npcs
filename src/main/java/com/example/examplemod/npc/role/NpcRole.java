@@ -111,7 +111,15 @@ public class NpcRole {
         NpcTask task = new NpcTask(this, nextTaskId++, taskType);
         tasks.add(task);
         if(manager == null) throw new RuntimeException("NpcRole.addTask presumably called on the client.");
+        manager.taskWasAddedToRole(this, task);
         setDirty();
         return task;
+    }
+
+    public void removeTask(NpcTask task) {
+        tasks.remove(task);
+        if(manager == null) throw new RuntimeException("NpcRole.removeTask presumably called on the client.");
+        manager.taskWasRemovedFromRole(this, task);
+        setDirty();
     }
 }

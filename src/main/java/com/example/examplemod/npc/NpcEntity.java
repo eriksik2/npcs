@@ -2,7 +2,6 @@ package com.example.examplemod.npc;
 
 import com.example.examplemod.npc.NpcData.Gender;
 import com.example.examplemod.npc.task.PerformTaskGoal;
-import com.example.examplemod.npc.task.WoodcutGoal;
 import com.example.examplemod.setup.Registration;
 
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
@@ -105,7 +104,7 @@ public class NpcEntity extends PathfinderMob implements MenuProvider {
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        this.goalSelector.addGoal(4, new WoodcutGoal(this));
+        this.goalSelector.addGoal(4, new PerformTaskGoal(this));
         this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
     }
 
