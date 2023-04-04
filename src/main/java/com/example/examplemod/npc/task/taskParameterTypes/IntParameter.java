@@ -1,6 +1,7 @@
 package com.example.examplemod.npc.task.taskParameterTypes;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.example.examplemod.npc.task.TaskParameterType;
 import com.example.examplemod.widgets.AbstractWidgetWrapper;
@@ -14,25 +15,29 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.INBTSerializable;
 
 
-public class IntParameter extends TaskParameterType<Integer, Integer> {
+public class IntParameter extends TaskParameterType<String, Integer> {
 
     public IntParameter(String name, Integer defaultValue) {
-        super(name, defaultValue, tag -> {
-            return tag.getInt("value");
+        super(name, defaultValue.toString(), tag -> {
+            return tag.getString("value");
         }, value -> {
             CompoundTag tag = new CompoundTag();
-            tag.putInt("value", value);
+            tag.putString("value", value);
             return tag;
         });
     }
 
     @Override
-    protected Integer convert(Integer value) {
-        return value;
+    protected Integer convert(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Override
-    protected ModWidget buildWidget(Integer value, Consumer<Integer> setter) {
+    protected ModWidget buildWidget(Supplier<String> getter, Consumer<String> setter) {
         return new ModWidget(null) {
 
             private AbstractWidgetWrapper<EditBox> textBox;
@@ -40,13 +45,9 @@ public class IntParameter extends TaskParameterType<Integer, Integer> {
             @Override
             public void onInit() {
                 textBox = addChild(new EditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.nullToEmpty("Value")));
-                textBox.getWrappedWidget().setValue(value == null ? "" : value.toString());
+                textBox.getWrappedWidget().setValue(getter.get() == null ? "" : getter.get());
                 textBox.getWrappedWidget().setResponder(text -> {
-                    try {
-                        setter.accept(Integer.parseInt(text));
-                    } catch (NumberFormatException e) {
-                        setter.accept(null);
-                    }
+                    setter.accept(text);
                 });
             }
 

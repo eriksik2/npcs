@@ -3,6 +3,7 @@ package com.example.examplemod.npc.task;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.checkerframework.common.returnsreceiver.qual.This;
 
@@ -28,7 +29,7 @@ public abstract class TaskParameterType<TValue, TOutput> {
     }
 
     protected abstract TOutput convert(TValue value);
-    protected abstract ModWidget buildWidget(TValue value, Consumer<TValue> setter);
+    protected abstract ModWidget buildWidget(Supplier<TValue> getter, Consumer<TValue> setter);
 
     public <T extends TaskParameterType<TValue, TOutput>> T withValidator(String message, Function<TValue, Boolean> validator) {
         validators.add(new TaskParameterValidator<TValue>(message, validator));

@@ -16,7 +16,6 @@ public class AreaDesignatorItemClientBehaviour {
 
     private static boolean isResizingArea = false;
 
-
     public static void onMouseEvent(InputEvent.MouseButton event, Player player) {
         if(event.getButton() == 1) {
             List<AreaHitResult> hitResults = ClientEditingArea.getHitResults();

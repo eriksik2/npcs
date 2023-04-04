@@ -17,6 +17,9 @@ public class TaskParameterWidget extends ModWidget {
     private Object currentValue;
     private Object inputValue;
 
+    private NpcTask task;
+    private TaskParameterType<?, ?> parameter;
+
     public TaskParameterWidget(ModWidget parent) {
         super(parent);
     }
@@ -65,27 +68,36 @@ public class TaskParameterWidget extends ModWidget {
         if(this.currentValue != null && this.currentValue.equals(value)) return;
         this.currentValue = value;
         if(this.inputValue == null) this.inputValue = value;
-        content.clearChildren();
-        nameWidget.setText(parameter.getName() + ":");
-        valueWidget = parameter.buildWidget(value, (newValue) -> {
-            //if(value != null && value.equals(newValue)) return;
-            if(newValue == null) {
-                errorWidget.setActive(false);
-                return;
-            }
-            this.inputValue = newValue;
-            String error = parameter.validate(newValue);
-            if(error != null) {
-                errorWidget.setText(error);
-                errorWidget.setActive(true);
-                return;
-            } else {
-                errorWidget.setActive(false);
-                errorWidget.setText("");
-            }
-            Messages.sendToServer(new SetTaskParameterValueMsg(task, parameter.getSlot(), newValue));
-        });
-        content.addChild(valueWidget);
+
+        boolean isSame = this.task != null
+            && this.task.getId() == task.getId()
+            && this.task.getManager().getId() == task.getManager().getId()
+            && this.task.getManager().getManager().getId() == task.getManager().getManager().getId()
+            && this.parameter != null
+            && this.parameter.getSlot() == parameter.getSlot();
+        this.task = task;
+        this.parameter = parameter;
+
+        if(valueWidget == null || !isSame) {
+            content.clearChildren();
+            nameWidget.setText(parameter.getName() + ":");
+            valueWidget = parameter.buildWidget(() -> (TValue)this.currentValue, (newValue) -> {
+                this.inputValue = newValue;
+                String error = parameter.validate(newValue);
+                if(error != null) {
+                    errorWidget.setText(error);
+                    errorWidget.setActive(true);
+                    return;
+                } else {
+                    errorWidget.setActive(false);
+                    errorWidget.setText("");
+                }
+                if(newValue != null && newValue.equals(this.currentValue)) return;
+                Messages.sendToServer(new SetTaskParameterValueMsg(task, parameter.getSlot(), newValue));
+            });
+            valueWidget.init();
+            content.addChild(valueWidget);
+        }
         setLayoutDirty();
     }
 }

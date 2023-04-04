@@ -16,7 +16,15 @@ import net.minecraft.world.entity.animal.Cow;
 public class KillMobTask extends TaskType {
     
     private IntParameter targetNum = new IntParameter("Keep alive", 0)
-        .withValidator("Value must be a number greater than 0", (value) -> value > 0);
+        .withValidator("Value must be a number", (value) -> {
+            try {
+                Integer.parseInt(value);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        })
+        .withValidator("Value must be greater than 0", (value) -> Integer.parseInt(value) > 0);
 
     public KillMobTask() {
         super(TaskRegistration.KILL_MOB_TASK.getId());
