@@ -1,6 +1,7 @@
 package com.example.examplemod.npc.area;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.joml.Matrix3f;
@@ -31,7 +32,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 
 public class NpcAreaRenderer {
     
-    public List<AreaHitResult> hitResults = new ArrayList<>();
+    public AreaHitResult hitResults;
     private NpcArea area;
 
     private LevelRenderer levelRenderer;
@@ -99,9 +100,9 @@ public class NpcAreaRenderer {
     } else {
         hitResults = ClientEditingArea.getHitResults();
     }
-    for(AreaHitResult result : hitResults) {
+    if(hitResults != null) {
         //renderAABB(result.sideAABB);
-        renderSide(aabb, result.side);
+        renderSide(aabb, hitResults.side);
     }
     //Integer lookingAt = getSideLookingAt(aabb);
     //if(lookingAt != null) {
@@ -380,8 +381,8 @@ public class NpcAreaRenderer {
         }
     }
 
-    public static List<AreaHitResult> doHitTestSides(AABB aabb, Camera camera, boolean skipFirstHit) {
-        Vec3 origin = camera.getPosition(); 
+    public static AreaHitResult doHitTestSides(AABB aabb, Camera camera, boolean skipFirstHit) {
+        Vec3 origin = camera.getPosition();
         Vector3f look = camera.getLookVector();
         AABB[] sides = NpcAreaRenderer.splitIntoSides(aabb, 0.1);
         Vector3f[] normals = NpcAreaRenderer.getSideNormals();
@@ -411,7 +412,17 @@ public class NpcAreaRenderer {
                 sidesHit.add(new AreaHitResult(side, sideIndex, hitPos, normal));
             }
         }
-        return sidesHit;
+        if(sidesHit.size() == 0) return null;
+        if(sidesHit.size() == 1) return sidesHit.get(0);
+        AreaHitResult selected = sidesHit.get(0);
+        for(int i = 1; i < sidesHit.size(); i++) {
+            AreaHitResult cand = sidesHit.get(i);
+            boolean cond = skipFirstHit
+                ? selected.hitPos.distance(origin.toVector3f()) < cand.hitPos.distance(origin.toVector3f())
+                : selected.hitPos.distance(origin.toVector3f()) > cand.hitPos.distance(origin.toVector3f());
+            if(cond) selected = cand;
+        }
+        return selected;
     }
     
 

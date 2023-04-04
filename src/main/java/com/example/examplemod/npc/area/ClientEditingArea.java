@@ -17,7 +17,7 @@ public class ClientEditingArea {
 
     public static NpcArea area;
     private static boolean doHitTests = true;
-    private static List<AreaHitResult> hitResults = new ArrayList<AreaHitResult>();
+    private static AreaHitResult hitResults;
 
     public static void setEditingArea(Integer teamId, Integer areaId) {
         if(teamSubscriptionBroker == null) teamSubscriptionBroker = Registration.TEAM_SUBSCRIPTION_BROKER.get();
@@ -56,14 +56,13 @@ public class ClientEditingArea {
         return doHitTests;
     }
 
-    public static synchronized List<AreaHitResult> setHitResults(List<AreaHitResult> hitResults) {
+    public static synchronized AreaHitResult setHitResults(AreaHitResult hitResults) {
         if(!doHitTests()) return ClientEditingArea.hitResults;
-        ClientEditingArea.hitResults.clear();
-        ClientEditingArea.hitResults.addAll(hitResults);
+        ClientEditingArea.hitResults = hitResults;
         return ClientEditingArea.hitResults;
     }
 
-    public static synchronized List<AreaHitResult> getHitResults() {
-        return new ArrayList<AreaHitResult>(ClientEditingArea.hitResults);
+    public static synchronized AreaHitResult getHitResults() {
+        return ClientEditingArea.hitResults;
     }
 }

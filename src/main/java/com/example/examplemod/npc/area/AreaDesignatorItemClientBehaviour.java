@@ -18,8 +18,8 @@ public class AreaDesignatorItemClientBehaviour {
 
     public static void onMouseEvent(InputEvent.MouseButton event, Player player) {
         if(event.getButton() == 1) {
-            List<AreaHitResult> hitResults = ClientEditingArea.getHitResults();
-            if(hitResults.size() != 0) {
+            AreaHitResult hitResults = ClientEditingArea.getHitResults();
+            if(hitResults != null) {
                 if(event.getAction() == 1) {
                     isResizingArea = true;
                     ClientEditingArea.stopHitTests();
@@ -47,12 +47,65 @@ public class AreaDesignatorItemClientBehaviour {
 
             Vector3f plr = new Vector3f((float)player.getX(), (float)player.getY() + player.getEyeHeight(), (float)player.getZ());
             Vector3f dir = new Vector3f((float)player.getViewVector(1).x, (float)player.getViewVector(1).y, (float)player.getViewVector(1).z);
-            for(AreaHitResult hitResult : ClientEditingArea.getHitResults()) {
+            AreaHitResult hitResult = ClientEditingArea.getHitResults();
+            if(hitResult != null) {
                 Vector3f hit = hitResult.hitPos;
-                float dist = hit.distance(plr);
-                Vector3f dragToPoint = plr.add(dir.mul(dist)).mul(hitResult.hitNormal);
-                float dragDist = dragToPoint.length();
-                AABB newAabb = setSidePos(area.toAABB(), hitResult.side, dragDist);
+                Vector3f normal = hitResult.hitNormal;
+                boolean isVertical = normal.y != 0;
+                float axisNormal = 0;
+                int axis = 0;
+                for(int i = 0; i < 3; i++) {
+                    if(normal.get(i) != 0) {
+                        axisNormal = normal.get(i);
+                        axis = i;
+                        break;
+                    }
+                }
+                boolean isNegative = axisNormal < 0;
+
+
+                Vector3f planePoint = plr;
+                Vector3f planeVector1 = dir;
+                Vector3f planeVector2 = isVertical
+                    ? player.getViewVector(1).cross(player.getUpVector(1)).toVector3f()
+                    : player.getUpVector(1).toVector3f();
+
+                if(isNegative) {
+                    if(axis == 1) {
+                        planeVector2.mul(-1);
+                    }
+                    //planeVector2.mul(-1);
+                }
+                
+                Vector3f planeNormal = planeVector1.cross(planeVector2).normalize();
+                // Flip planeNormal if it's pointing away from the hit point
+                if(planeNormal.dot(normal) < 0) {
+                    planeNormal.mul(-1);
+                }
+
+                // for vertical case:
+                // n1 * (x - p1) + n2 * (y - p2) + n3 * (z - p3) = 0
+                // -n1 * (x - p1) - n3 * (z - p3) = n2 * (y - p2)
+                // -(n1*(x - p1) + n3*(z - p3))/n2 + p2 = y
+                float dividend = 0;
+                float divisor = 0;
+                float constant = 0;
+                for(int i = 0; i < 3; i++) {
+                    if(normal.get(i) != 0) {
+                        divisor = normal.get(i);
+                        constant = planePoint.get(i);
+                        continue;
+                    } else {
+                        dividend += planeNormal.get(i) * (hit.get(i) - planePoint.get(i));
+                    }
+                }
+                float newAxisPoint = -(dividend / divisor) + constant;
+                AABB newAabb = setSidePos(area.toAABB(), hitResult.side, newAxisPoint);
+
+                //float dist = hit.distance(plr);
+                //Vector3f dragToPoint = plr.add(dir.mul(dist)).mul(hitResult.hitNormal);
+                //float dragDist = dragToPoint.length();
+                //AABB newAabb = setSidePos(area.toAABB(), hitResult.side, dragDist);
                 area.fromAAAB(newAabb);
             }
         }
