@@ -5,12 +5,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.checkerframework.common.returnsreceiver.qual.This;
 
 import com.example.examplemod.widgets.ModWidget;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
 
 public abstract class TaskParameterType<TValue, TOutput> {
     

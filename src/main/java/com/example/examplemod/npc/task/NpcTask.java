@@ -1,7 +1,6 @@
 package com.example.examplemod.npc.task;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.example.examplemod.npc.role.NpcRole;
@@ -9,7 +8,6 @@ import com.example.examplemod.npc.role.NpcRole;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.INBTSerializable;
 
 public class NpcTask {
     

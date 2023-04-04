@@ -4,20 +4,17 @@ import java.util.Collection;
 import java.util.List;
 
 import com.example.examplemod.networking.Messages;
-import com.example.examplemod.npc.NpcData;
 import com.example.examplemod.npc.task.AddTaskToRoleMsg;
 import com.example.examplemod.npc.task.NpcTask;
 import com.example.examplemod.npc.task.TaskEditorWidget;
 import com.example.examplemod.npc.task.TaskRegistration;
 import com.example.examplemod.npc.task.TaskType;
 import com.example.examplemod.npc.team.NpcTeam;
-import com.example.examplemod.setup.Registration;
 import com.example.examplemod.widgets.ButtonWidget;
 import com.example.examplemod.widgets.ColumnLayoutWidget;
 import com.example.examplemod.widgets.ModWidget;
 import com.example.examplemod.widgets.NpcPreviewWidget;
 import com.example.examplemod.widgets.RowLayoutWidget;
-import com.example.examplemod.widgets.ScrollableListWidget;
 import com.example.examplemod.widgets.ScrollableWidget;
 import com.example.examplemod.widgets.TextWidget;
 

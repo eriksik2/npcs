@@ -10,9 +10,7 @@ import com.example.examplemod.widgets.ModWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.util.INBTSerializable;
 
 
 public class IntParameter extends TaskParameterType<String, Integer> {
